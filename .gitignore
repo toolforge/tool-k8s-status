@@ -2,3 +2,4 @@
 /.python-version
 /.tox
 __pycache__/
+/config.yaml
