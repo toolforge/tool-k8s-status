@@ -46,7 +46,8 @@ def home():
         ctx.update(
             {
                 "version": k8s.client.get_version(),
-                "pods": k8s.client.get_tool_pods(cached=cached),
+                # FIXME: discover project prefix for filtering
+                "pods": k8s.client.get_tool_pods("tools", cached=cached),
             }
         )
     except Exception:
