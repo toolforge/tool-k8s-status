@@ -123,7 +123,7 @@ function shell {
         --serviceaccount=${tool}-obs \
         --stdin=true \
         --tty=true \
-        -- "$*"
+        -- "$@"
 }
 
 function _get_pod {
@@ -161,7 +161,7 @@ case $cmd in
         shell "$tool" /bin/bash -il
     ;;
     debug)
-        shell "$tool" $HOME/python/venv/bin/flask shell
+        shell "$tool" $HOME/www/python/venv/bin/flask shell
     ;;
     tail)
         /usr/bin/kubectl logs -f $(_get_pod $tool)
