@@ -4,7 +4,7 @@
 #/ Manage a webservice deployment on the Toolfroge Kubernetes cluster
 #/
 #/ positional arguments:
-#/   {start,stop,status,restart,shell} Action to perform
+#/   {start,stop,status,restart,shell,debug,tail} Action to perform
 #
 set -Eeuo pipefail
 
@@ -110,6 +110,22 @@ function stopsvc {
     /usr/bin/kubectl delete deployment $tool
 }
 
+function shell {
+    local tool=${1:?shell expects a tool name}
+    shift
+    exec $HOME/bin/kubectl run interactive \
+        --image=docker-registry.tools.wmflabs.org/toolforge-python37-sssd-base:latest \
+        --restart=Never \
+        --command=true \
+        --env=HOME=$HOME \
+        --labels='toolforge=tool' \
+        --rm=true \
+        --serviceaccount=${tool}-obs \
+        --stdin=true \
+        --tty=true \
+        -- "$*"
+}
+
 function _get_pod {
     local tool=${1:?_get_pod expects a tool name}
     /usr/bin/kubectl get pods \
@@ -142,17 +158,13 @@ case $cmd in
     ;;
     shell)
         echo "Starting interactive shell..."
-        exec $HOME/bin/kubectl run interactive \
-            --image=docker-registry.tools.wmflabs.org/toolforge-python37-sssd-base:latest \
-            --restart=Never \
-            --command=true \
-            --env=HOME=$HOME \
-            --labels='toolforge=tool' \
-            --rm=true \
-            --serviceaccount=${tool}-obs \
-            --stdin=true \
-            --tty=true \
-            -- /bin/bash -il
+        shell "$tool" /bin/bash -il
+    ;;
+    debug)
+        shell "$tool" $HOME/python/venv/bin/flask shell
+    ;;
+    tail)
+        /usr/bin/kubectl logs -f $(_get_pod $tool)
     ;;
     --help|-h|help)
         usage 0
