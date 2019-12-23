@@ -23,6 +23,7 @@ import os
 
 import flask
 import werkzeug.contrib.fixers
+import yaml
 
 import k8s.client
 
@@ -34,10 +35,12 @@ app.wsgi_app = werkzeug.contrib.fixers.ProxyFix(app.wsgi_app)
 # See default_config.yaml for more information
 __dir__ = os.path.dirname(__file__)
 app.config.update(
-    yaml.safe_load(open(os.path.join(__dir__, "default_config.yaml"))))
+    yaml.safe_load(open(os.path.join(__dir__, "default_config.yaml")))
+)
 try:
     app.config.update(
-        yaml.safe_load(open(os.path.join(__dir__, "config.yaml"))))
+        yaml.safe_load(open(os.path.join(__dir__, "config.yaml")))
+    )
 except IOError:
     # It is ok if there is no local config file
     pass
@@ -98,6 +101,7 @@ def page_not_found(e):
     return flask.redirect(flask.url_for("home"))
 
 
-@app.template_filter('contains')
+@app.template_filter("contains")
 def contains(haystack, needle):
+    """Search a haystack for a needle."""
     return needle in haystack
