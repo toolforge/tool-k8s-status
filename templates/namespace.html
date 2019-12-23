@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}Namespace {{ namespace }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="{{ url_for('namespaces') }}" rel="nofollow">Namespaces</a></li>
+  <li class="active">{{ namespace }}</li>
+</ol>
+<div class="page-header">
+  <h1>Namespace: {{ namespace|capitalize }}</a></h1>
+</div>
+{% endblock %}

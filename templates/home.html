@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="panel-group" role="tablist">
+  <div class="panel panel-info">
+    <div class="panel-heading">
+      <span class="glyphicon glyphicon-tasks"></span>
+      Usage
+    </div>
+    <div class="table-responsive">
+      <table class="table table-condensed">
+        <tr>
+          <th>Active tool namespaces</th>
+          <td>{{ '{:,}'.format(pods.active_namespaces) }}</td>
+        </tr>
+        <tr>
+          <th>Number of pods</th>
+          <td>{{ '{:,}'.format(pods.total) }}</td>
+        </tr>
+        <tr>
+          <th>Kubernetes version</th>
+          <td>{{ version.git_version }}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="panel-footer text-right">
+      <small>Last updated: {{ pods.generated }} UTC</small>
+    </div>
+  </div>
+</div>
+{% endblock %}
