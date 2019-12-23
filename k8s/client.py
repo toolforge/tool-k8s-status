@@ -53,14 +53,14 @@ def get_namespaces(cached=True):
     return data
 
 
-def get_tool_namespaces(project, cached=True):
+def get_tool_namespaces(cached=True):
     """Get a list of all tool namespaces in the cluster."""
     all_ns = get_namespaces(cached)
     return {
         "items": [
             ns
             for ns in all_ns["items"]
-            if ns.metadata.name.startswith("{}-".format(project))
+            if ns.metadata.name.startswith("tool-")
         ],
         "generated": all_ns["generated"],
     }
@@ -80,7 +80,7 @@ def get_pods(namespace, cached=True):
     return data
 
 
-def get_tool_pods(project, cached=True):
+def get_tool_pods(cached=True):
     """Get a collection of all Pods belonging to tools in the cluster."""
     key = "toolpods"
     data = cache().get(key) if cached else None
@@ -91,7 +91,7 @@ def get_tool_pods(project, cached=True):
             "active_namespaces": 0,
             "total": 0,
         }
-        tool_ns = get_tool_namespaces(project, cached)
+        tool_ns = get_tool_namespaces(cached)
         for ns in tool_ns["items"]:
             data["namespaces"][ns.metadata.name] = ns.items
             pods = len(ns.items)

@@ -57,9 +57,7 @@ def home():
         ctx.update(
             {
                 "version": k8s.client.get_version(),
-                "pods": k8s.client.get_tool_pods(
-                    app.config["PROJECT"], cached=cached
-                ),
+                "pods": k8s.client.get_tool_pods(cached=cached),
             }
         )
     except Exception:
@@ -74,11 +72,7 @@ def namespaces():
     try:
         cached = "purge" not in flask.request.args
         ctx.update(
-            {
-                "namespaces": k8s.client.get_tool_namespaces(
-                    app.config["PROJECT"], cached=cached
-                ),
-            }
+            {"namespaces": k8s.client.get_tool_namespaces(cached=cached),}
         )
     except Exception:
         app.logger.exception("Error collecting namespaces")
