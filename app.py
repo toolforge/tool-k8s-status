@@ -57,8 +57,9 @@ def home():
         ctx.update(
             {
                 "version": k8s.client.get_version(),
-                # FIXME: discover project prefix for filtering
-                "pods": k8s.client.get_tool_pods("tools", cached=cached),
+                "pods": k8s.client.get_tool_pods(
+                    app.config["PROJECT"], cached=cached
+                ),
             }
         )
     except Exception:
@@ -72,11 +73,10 @@ def namespaces():
     ctx = {}
     try:
         cached = "purge" not in flask.request.args
-        # FIXME: discover project prefix for filtering
         ctx.update(
             {
                 "namespaces": k8s.client.get_tool_namespaces(
-                    "tools", cached=cached
+                    app.config["PROJECT"], cached=cached
                 ),
             }
         )
