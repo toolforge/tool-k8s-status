@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Caching object."""
+import functools
 import hashlib
 import os
 import pwd
@@ -24,11 +25,15 @@ import pwd
 import cachelib
 import flask
 
-CACHE = cachelib.RedisCache(
-    host=flask.current_app.config["REDIS_HOST"],
-    key_prefix=hashlib.sha256(
-        "{0.pw_name}/{0.pw_dir}".format(pwd.getpwuid(os.getuid())).encode(
-            "utf-8"
-        )
-    ).hexdigest(),
-)
+
+@functools.lru_cache()
+def cache():
+    """Get cachelib cache."""
+    return cachelib.RedisCache(
+        host=flask.current_app.config["REDIS_HOST"],
+        key_prefix=hashlib.sha256(
+            "{0.pw_name}/{0.pw_dir}".format(pwd.getpwuid(os.getuid())).encode(
+                "utf-8"
+            )
+        ).hexdigest(),
+    )

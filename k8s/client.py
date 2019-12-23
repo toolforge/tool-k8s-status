@@ -22,7 +22,7 @@ import functools
 
 import kubernetes
 
-from .cache import CACHE
+from .cache import cache
 
 
 kubernetes.config.load_incluster_config()
@@ -42,14 +42,14 @@ def get_version():
 def get_namespaces(cached=True):
     """Get a list of all namespaces in the cluster."""
     key = "namespaces"
-    data = CACHE.get(key) if cached else None
+    data = cache().get(key) if cached else None
     if not data:
         v1 = corev1_client()
         data = {
             "items": v1.list_namespace().items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
-        CACHE.set(key, data, timeout=600)
+        cache().set(key, data, timeout=600)
     return data
 
 
@@ -69,21 +69,21 @@ def get_tool_namespaces(project, cached=True):
 def get_pods(namespace, cached=True):
     """Get a list of all pods in a namespace."""
     key = "pods:{}".format(namespace)
-    data = CACHE.get(key) if cached else None
+    data = cache().get(key) if cached else None
     if not data:
         v1 = corev1_client()
         data = {
             "items": v1.list_namespaced_pod(namespace=namespace).items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
-        CACHE.set(key, data, timeout=300)
+        cache().set(key, data, timeout=300)
     return data
 
 
 def get_tool_pods(project, cached=True):
     """Get a collection of all Pods belonging to tools in the cluster."""
     key = "toolpods"
-    data = CACHE.get(key) if cached else None
+    data = cache().get(key) if cached else None
     if not data:
         data = {
             "namespaces": {},
@@ -98,5 +98,5 @@ def get_tool_pods(project, cached=True):
             data["total"] += pods
             if pods > 0:
                 data["active_namespaces"] += 1
-        CACHE.set(key, data, timeout=300)
+        cache().set(key, data, timeout=300)
     return data
