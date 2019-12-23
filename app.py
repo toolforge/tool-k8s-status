@@ -87,3 +87,8 @@ def page_not_found(e):
     """Handle 404 errors."""
     flask.flash("Requested URL not found.", "error")
     return flask.redirect(flask.url_for("home"))
+
+
+@app.template_filter('contains')
+def contains(haystack, needle):
+    return needle in haystack
