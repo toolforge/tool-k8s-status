@@ -45,7 +45,7 @@ def home():
         cached = "purge" not in flask.request.args
         ctx.update(
             {
-                "version": k8s.client.get_code(),
+                "version": k8s.client.get_version(),
                 "pods": k8s.client.get_tool_pods(cached=cached),
             }
         )
