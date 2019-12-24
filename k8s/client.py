@@ -94,7 +94,7 @@ def get_tool_pods(cached=True):
         tool_ns = get_tool_namespaces(cached)
         for ns in tool_ns["items"]:
             name = ns.metadata.name
-            data["namespaces"][name] = get_pods(name)
+            data["namespaces"][name] = get_pods(name)["items"]
             pods = len(data["namespaces"][name])
             data["total"] += pods
             if pods > 0:
