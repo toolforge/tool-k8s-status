@@ -37,10 +37,11 @@
             {{ key }}:{{ value }}
             {% endfor %}
           </td>
-          <td>{{ pod.status.container_statuses|selectattr('ready', 'equalto', 'True')|list|length }}/{{ pod.status.container_statuses|length }}
+          <td>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}
           </td>
           <td>{{ pod.status.phase }}</td>
-          <td>{{ pod.status.container_statuses|sum(attribute='restart_count') }}|</td>
+          <td>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
+          <td>{{ pod.status.host_ip }}</td>
           <td>{{ pod.status.start_time|summarize }}</td>
         </tr>
         {% endfor %}
