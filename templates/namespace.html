@@ -33,7 +33,7 @@
         <tr>
           <td>{{ pod.metadata.name }}</td>
           <td>
-            {% for key, value in pod.metadata.labels %}
+            {% for key, value in pod.metadata.labels.items() %}
             {{ key }}:{{ value }}
             {% endfor %}
           </td>
