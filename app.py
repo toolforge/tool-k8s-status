@@ -110,7 +110,7 @@ def contains(haystack, needle):
 @app.template_filter("summarize")
 def summarize(ts):
     """Convert a timestamp to a relative time from the current time."""
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=ts.tzinfo)
     diff_secs = (now - ts).total_seconds()
     if diff_secs > 86400:
         return "{}d".format(int(diff_secs // 86400))
