@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Web UI for exploring a Toolfroge Kubernetes cluster."""
+import datetime
 import logging
 import os
 
@@ -65,7 +66,7 @@ def home():
     return flask.render_template("home.html", **ctx)
 
 
-@app.route("/namespace/")
+@app.route("/namespaces/")
 def namespaces():
     """List namespaces."""
     ctx = {}
@@ -79,7 +80,7 @@ def namespaces():
     return flask.render_template("namespaces.html", **ctx)
 
 
-@app.route("/namespace/<namespace>/")
+@app.route("/namespaces/<namespace>/")
 def namespace(namespace):
     """Get details for a given namespace."""
     ctx = {
@@ -89,7 +90,7 @@ def namespace(namespace):
         cached = "purge" not in flask.request.args
         ctx.update({"pods": k8s.client.get_pods(namespace, cached=cached)})
     except Exception:
-        app.logger.exception("Error collecting namespace {}".format(namespace))
+        app.logger.exception("Error collecting namespace %s", namespace)
     return flask.render_template("namespace.html", **ctx)
 
 
@@ -104,3 +105,18 @@ def page_not_found(e):
 def contains(haystack, needle):
     """Search a haystack for a needle."""
     return needle in haystack
+
+
+@app.template_filter("summarize")
+def summarize(ts):
+    """Convert a timestamp to a relative time from the current time."""
+    now = datetime.datetime.now()
+    diff_secs = (now - ts).total_seconds()
+    if diff_secs > 86400:
+        return "{}d".format(int(diff_secs // 86400))
+    elif diff_secs > 3600:
+        return "{}h".format(int(diff_secs // 3600))
+    elif diff_secs > 60:
+        return "{}m".format(int(diff_secs // 60))
+    else:
+        return "{}s".format(int(diff_secs))
