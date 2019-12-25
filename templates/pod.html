@@ -13,35 +13,50 @@
   <h1>Pod: {{ pod.metadata.name|capitalize }}</a></h1>
 </div>
 
-<div class="row">
-  <div class="col-sm-12">
-    {% for key, value in pod.metadata.labels.items() %}
-    <span class="label label-outline">{{ key }}:{{ value }}</span>
-    {% endfor %}
+<div class="panel-group" role="tablist">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-equalizer"></span>
+        Status
+      </h3>
+    </div>
+    <div class="panel-body">
+      <dl class="dl-horizontal">
+        <dt>Ready</dt>
+        <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
+        <dt>Phase</dt>
+        <dd>{{ pod.status.phase }}</dd>
+        <dt>Restarts</dt>
+        <dd>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</dd>
+        <dt>Node</dt>
+        <dd>{{ pod.status.host_ip }}</dd>
+        <dt>Age</dt>
+        <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
+        <dt>Labels</dt>
+        <dd>
+          {% for key, value in pod.metadata.labels.items() -%}
+          <span class="label label-outline">{{ key }}:{{ value }}</span>
+          {%- endfor %}
+        </dd>
+      </dl>
+    </div>
   </div>
-</div>
-<div class="row">
-  <div class="col-sm-12">
-    <dl class="dl-horizontal">
-      <dt>Ready</dt>
-      <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
-      <dt>Phase</dt>
-      <dd>{{ pod.status.phase }}</dd>
-      <dt>Restarts</dt>
-      <dd>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</dd>
-      <dt>Node</dt>
-      <dd>{{ pod.status.host_ip }}</dd>
-      <dt>Age</dt>
-      <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%dT%H:%M:%S %Z') }})</dd>
-    </dl>
-  </div>
-</div>
-<div class="row">
-  <div class="col-sm-12">
+
+  <div class="panel panel-default">
+    <div id="yaml-heading" class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <a href="#yaml-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="yaml-body">
+          <span class="glyphicon glyphicon-floppy-disk"></span>
+          YAML dump
+        </a>
+      </h3>
+    </div>
+    <div id="yaml-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="yaml-heading">
     <pre><code class="language-yaml">{{ pod.to_dict()|yaml }}</code></pre>
   </div>
-</div>
 
+</div>
 {% endblock %}
 
 {% block css %}
