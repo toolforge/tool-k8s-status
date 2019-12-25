@@ -16,7 +16,7 @@
   transition: none;
 }
 
-label-outline {
+.label-outline {
   background:inhert;
   color:inherit;
   border: solid 1px #5bc0de;
