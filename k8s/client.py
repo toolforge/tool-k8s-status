@@ -53,19 +53,6 @@ def get_namespaces(cached=True):
     return data
 
 
-def get_tool_namespaces(cached=True):
-    """Get a list of all tool namespaces in the cluster."""
-    all_ns = get_namespaces(cached)
-    return {
-        "items": [
-            ns
-            for ns in all_ns["items"]
-            if ns.metadata.name.startswith("tool-")
-        ],
-        "generated": all_ns["generated"],
-    }
-
-
 def get_pods(namespace, cached=True):
     """Get a list of all pods in a namespace."""
     key = "pods:{}".format(namespace)
