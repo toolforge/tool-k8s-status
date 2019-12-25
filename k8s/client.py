@@ -105,7 +105,7 @@ def get_tool_pods(cached=True):
 
 def get_pod(namespace, pod, cached=True):
     """Get details for a pod."""
-    key ="pods:{}:{}".format(namespace, pod)
+    key = "pods:{}:{}".format(namespace, pod)
     data = cache().get(key) if cached else None
     if not data:
         v1 = corev1_client()
