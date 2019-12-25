@@ -51,5 +51,8 @@
 {% block js %}
 {{ super() }}
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  hljs.initHighlightingOnLoad();
+</script>
 {% endblock %}
 {# vim:sw=2:ts=2:sts=2:et: #}
