@@ -32,7 +32,7 @@
       <dt>Node</dt>
       <dd>{{ pod.status.host_ip }}</dd>
       <dt>Age</dt>
-      <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_timei.strftime('%Y-%m-%dT%H:%M:%S %Z') }})</dd>
+      <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%dT%H:%M:%S %Z') }})</dd>
     </dl>
   </div>
 </div>
