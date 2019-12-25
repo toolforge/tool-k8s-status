@@ -22,7 +22,7 @@
 </div>
 <div class="row">
   <div class="col-sm-12">
-    <dl class="dl-hoizontal">
+    <dl class="dl-horizontal">
       <dt>Ready</dt>
       <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
       <dt>Phase</dt>
