@@ -31,14 +31,13 @@
       <tbody>
         {% for pod in pods["items"] %}
         <tr>
-          <td>{{ pod.metadata.name }}</td>
+          <td><a href="{{ url_for('pod', namespace=namespace, pod=pod.metadata.name) }}">{{ pod.metadata.name }}</a></td>
           <td>
             {% for key, value in pod.metadata.labels.items() %}
-            {{ key }}:{{ value }}
+            <span class="label label-outline">{{ key }}:{{ value }}</span>
             {% endfor %}
           </td>
-          <td>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}
-          </td>
+          <td>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</td>
           <td>{{ pod.status.phase }}</td>
           <td>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
           <td>{{ pod.status.host_ip }}</td>

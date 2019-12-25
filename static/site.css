@@ -15,3 +15,9 @@
   -webkit-transition: none;
   transition: none;
 }
+
+label-outline {
+  background:inhert;
+  color:inherit;
+  border: solid 1px #5bc0de;
+}

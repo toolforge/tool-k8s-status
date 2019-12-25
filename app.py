@@ -94,6 +94,20 @@ def namespace(namespace):
     return flask.render_template("namespace.html", **ctx)
 
 
+@app.route("/namespaces/<namespace>/pods/<pod>/")
+def pod(namespace, pod):
+    """Get details for a given pod."""
+    ctx = {
+        "namespace": namespace,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update({"pods": k8s.client.get_pod(namespace, pod, cached=cached)})
+    except Exception:
+        app.logger.exception("Error collecting namespace %s", namespace)
+    return flask.render_template("pod.html", **ctx)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors."""
@@ -120,3 +134,8 @@ def summarize(ts):
         return "{}m".format(int(diff_secs // 60))
     else:
         return "{}s".format(int(diff_secs))
+
+
+@app.template_filter("yaml")
+def pprint_yaml(obj):
+    return yaml.dump(obj)

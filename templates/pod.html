@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}Pod {{ namespace }}.{{ pod.metadata.name }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="{{ url_for('namespaces') }}" rel="nofollow">Namespaces</a></li>
+  <li><a href="{{ url_for('namespace', namespace=namespace) }}" rel="nofollow">{{ namespace }}</a></li>
+  <li>Pods</li>
+  <li class="active">{{ pod.metadata.name }}</li>
+</ol>
+<div class="page-header">
+  <h1>Pod: {{ pod.metadata.name|capitalize }}</a></h1>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    {% for key, value in pod.metadata.labels.items() %}
+    <span class="label label-outline">{{ key }}:{{ value }}</span>
+    {% endfor %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <dl class="dl-hoizontal">
+      <dt>Ready</dt>
+      <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
+      <dt>Phase</dt>
+      <dd>{{ pod.status.phase }}</dd>
+      <dt>Restarts</dt>
+      <dd>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</dd>
+      <dt>Node</dt>
+      <dd>{{ pod.status.host_ip }}</dd>
+      <dt>Age</dt>
+      <dd>{{ pod.status.start_time|summarize }}</dd>
+    </dl>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <pre><code style="language-yaml">
+    {{ pod.to_dict()|yaml }}
+    </code></pre>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css" integrity="sha256-zcunqSn1llgADaIPFyzrQ8USIjX2VpuxHzUwYisOwo8=" crossorigin="anonymous" />
+{% endblock %}
+
+{% block js %}
+{{ super() }}
+<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+{% endblock %}
+{# vim:sw=2:ts=2:sts=2:et: #}

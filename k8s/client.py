@@ -101,3 +101,16 @@ def get_tool_pods(cached=True):
                 data["active_namespaces"] += 1
         cache().set(key, data, timeout=300)
     return data
+
+
+def get_pod(namespace, pod, cached=True):
+    """Get details for a pod."""
+    key ="pods:{}:{}".format(namespace, pod)
+    data = cache().get(key) if cached else None
+    if not data:
+        v1 = corev1_client()
+        data = {
+            "pod": v1.read_namespaced_pod(name=pod, namespace=namespace),
+        }
+        cache().set(key, data, timeout=300)
+    return data
