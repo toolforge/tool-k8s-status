@@ -80,6 +80,20 @@ def get_pods(namespace, cached=True):
     return data
 
 
+def get_all_pods(cached=True):
+    """Get a list of all pods."""
+    key = "pods:__all__"
+    data = cache().get(key) if cached else None
+    if not data:
+        v1 = corev1_client()
+        data = {
+            "items": v1.list_pod_for_all_namespaces().items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
 def get_tool_pods(cached=True):
     """Get a collection of all Pods belonging to tools in the cluster."""
     key = "toolpods"
@@ -91,14 +105,15 @@ def get_tool_pods(cached=True):
             "active_namespaces": 0,
             "total": 0,
         }
-        tool_ns = get_tool_namespaces(cached)
-        for ns in tool_ns["items"]:
-            name = ns.metadata.name
-            data["namespaces"][name] = get_pods(name)["items"]
-            pods = len(data["namespaces"][name])
-            data["total"] += pods
-            if pods > 0:
-                data["active_namespaces"] += 1
+        for pod in get_all_pods(cached=cached)["items"]:
+            ns = pod.metadata.namespace
+            if not ns.startswith("tool-"):
+                continue
+            if ns not in data["namespaces"]:
+                data["namespaces"][ns] = []
+            data["namespaces"][ns].append(pod)
+            data["total"] += 1
+        data["active_namespaces"] = len(data["namespaces"].keys())
         cache().set(key, data, timeout=300)
     return data
 
