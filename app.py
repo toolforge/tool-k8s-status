@@ -138,4 +138,5 @@ def summarize(ts):
 
 @app.template_filter("yaml")
 def pprint_yaml(obj):
-    return yaml.dump(obj)
+    """Dump an object as YAML."""
+    return yaml.dump(obj, explicit_start=True, width=79, indent=2)
