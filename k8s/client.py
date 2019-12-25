@@ -81,8 +81,8 @@ def get_all_pods(cached=True):
     return data
 
 
-def get_tool_pods(cached=True):
-    """Get a collection of all Pods belonging to tools in the cluster."""
+def get_pods_by_namespace(cached=True):
+    """Get a collection of all Pods groups by namespace."""
     key = "toolpods"
     data = cache().get(key) if cached else None
     if not data:
@@ -90,16 +90,14 @@ def get_tool_pods(cached=True):
             "namespaces": {},
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "active_namespaces": 0,
-            "total": 0,
+            "total_pods": 0,
         }
         for pod in get_all_pods(cached=cached)["items"]:
             ns = pod.metadata.namespace
-            if not ns.startswith("tool-"):
-                continue
             if ns not in data["namespaces"]:
                 data["namespaces"][ns] = []
             data["namespaces"][ns].append(pod)
-            data["total"] += 1
+            data["total_pods"] += 1
         data["active_namespaces"] = len(data["namespaces"].keys())
         cache().set(key, data, timeout=300)
     return data

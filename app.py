@@ -58,7 +58,7 @@ def home():
         ctx.update(
             {
                 "version": k8s.client.get_version(),
-                "pods": k8s.client.get_tool_pods(cached=cached),
+                "pods": k8s.client.get_pods_by_namespace(cached=cached),
             }
         )
     except Exception:

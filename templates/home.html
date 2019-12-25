@@ -10,12 +10,28 @@
     <div class="table-responsive">
       <table class="table table-condensed">
         <tr>
-          <th>Active tool namespaces</th>
+          <th>Active namespaces</th>
           <td>{{ '{:,}'.format(pods.active_namespaces) }}</td>
         </tr>
         <tr>
           <th>Number of pods</th>
-          <td>{{ '{:,}'.format(pods.total) }}</td>
+          <td>{{ '{:,}'.format(pods.total_pods) }}</td>
+        </tr>
+        <tr>
+          <th>Master nodes</th>
+          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+        </tr>
+        <tr>
+          <th>Worker nodes</th>
+          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+        </tr>
+        <tr>
+          <th>CPU</th>
+          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+        </tr>
+        <tr>
+          <th>Memory (GiB)</th>
+          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
         </tr>
         <tr>
           <th>Kubernetes version</th>
@@ -29,3 +45,4 @@
   </div>
 </div>
 {% endblock %}
+{# vim:sw=2:ts=2:sts=2:et: #}
