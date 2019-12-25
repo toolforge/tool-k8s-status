@@ -111,6 +111,7 @@ def get_pod(namespace, pod, cached=True):
         v1 = corev1_client()
         data = {
             "pod": v1.read_namespaced_pod(name=pod, namespace=namespace),
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
     return data
