@@ -145,6 +145,7 @@
             <dd>{{ container_status.ready }}</dd>
             <dt>Restart count</dt>
             <dd>{{ container_status.restart_count }}</dd>
+            {% if container.resources %}
             {% if container.resources['limits'] %}
             <dt>Limits</dt>
             <dd>
@@ -166,6 +167,7 @@
                 {% endfor %}
               </dl>
             </dd>
+            {% endif %}
             {% endif %}
             {% if container.env %}
             <dt>Environment</dt>
