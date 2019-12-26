@@ -48,9 +48,11 @@
         <dt>IP</dt>
         <dd>{{ pod.spec.pod_ip }}</dd>
         <dt>Controlled by:</dt>
-        <dd>{% for ref in pod.metadata.owner_references -%}
+        <dd>
+          {% for ref in pod.metadata.owner_references -%}
           <span>{{ ref.kind }}/{{ ref.name }}</span>
-        {%- endfor %}</dd>
+          {%- endfor %}
+        </dd>
       </dl>
     </div>
   </div>
@@ -77,73 +79,114 @@
             <dd>{{ container_status.image_id }}</dd>
             {% if container.ports %}
             <dt>Port</dt>
-            <dd>{% for port in container.ports -%}
+            <dd>
+              {% for port in container.ports -%}
               {{ port.container_port }}/{{ port.protocol }}
-            {%- endfor %}</dd>
+              {%- endfor %}
+            </dd>
             <dt>Host port</dt>
-            <dd>{% for port in container.ports -%}
+            <dd>
+              {% for port in container.ports -%}
               {{ port.host_port }}/{{ port.protocol }}
-            {%- endfor %}</dd>
+              {%- endfor %}
+            </dd>
             {% endif %}
             <dt>Command</dt>
-            <dd><ul class="list-unstyled">
-                {% for cmd in container.command %}<li>{{ cmd }}</li>{% endfor %}
-            </ul></dd>
-            <dt>State</dt>
             <dd>
-              {% set states = container_status.state|dictsort %}
-              {% for key, value in states.items() %}
-              {{ key }}
+              <ul class="list-unstyled">
+                {% for cmd in container.command -%}
+                <li>{{ cmd }}</li>
+                {%- endfor %}
+              </ul>
+            </dd>
+            <dt>State</dt>
+            {% if container_status.state.running %}
+            <dd>Running
               <dl class="dl-horizontal">
-                {% for name, data in value %}
+                <dt>Started</dt>
+                <dd>{{ container_status.state.running.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
+              </dl>
+            </dd>
+            {% endif %}
+            {% if container_status.state.terminated %}
+            <dd>Terminated
+              <dl class="dl-horizontal">
+                <dt>Started</dt>
+                <dd>{{ container_status.state.terminated.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
+                <dt>Finished</dt>
+                <dd>{{ container_status.state.terminated.finished_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
+                <dt>Exit code</dt>
+                <dd>{{ container_status.state.terminated.exit_code }}</dd>
+                <dt>Message</dt>
+                <dd>{{ container_status.state.terminated.message }}</dd>
+                <dt>Reason</dt>
+                <dd>{{ container_status.state.terminated.reason }}</dd>
+                <dt>Signal</dt>
+                <dd>{{ container_status.state.terminated.signal }}</dd>
+              </dl>
+            </dd>
+            {% endif %}
+            {% if container_status.state.waiting %}
+            <dd>Waiting
+              <dl class="dl-horizontal">
+                <dt>Reason</dt>
+                <dd>{{ container_status.state.waiting.reason }}</dd>
+                <dt>Message</dt>
+                <dd>{{ container_status.state.waiting.message }}</dd>
+              </dl>
+            </dd>
+            {% endif %}
+            <dt>Ready</dt>
+            <dd>{{ container_status.ready }}</dd>
+            <dt>Restart count</dt>
+            <dd>{{ container_status.restart_count }}</dd>
+            {% if container.resources['limits'] %}
+            <dt>Limits</dt>
+            <dd>
+              <dl class="dl-horizontal">
+                {% for name, value in container.resources['limits'].items() %}
                 <dt>{{ name }}</dt>
-                <dd>{{ data }}</dd>
+                <dd>{{ value }}</dd>
                 {% endfor %}
               </dl>
-            {% endfor %}</dd>
-          <dt>Ready</dt>
-          <dd>{{ container_status.ready }}</dd>
-          <dt>Restart count</dt>
-          <dd>{{ container_status.restart_count }}</dd>
-          {% if container.resources['limits'] %}
-          <dt>Limits</dt>
-          <dd><dl class="dl-horizontal">
-              {% for name, value in container.resources['limits'].items() %}
-              <dt>{{ name }}</dt>
-              <dd>{{ value }}</dd>
-              {% endfor %}
-          </dl></dd>
-          {% endif %}
-          {% if container.resources['requests'] %}
-          <dt>Requests</dt>
-          <dd><dl class="dl-horizontal">
-              {% for name, value in container.resources['requests'].items() %}
-              <dt>{{ name }}</dt>
-              <dd>{{ value }}</dd>
-              {% endfor %}
-          </dl></dd>
-          {% endif %}
-          {% if container.env %}
-          <dt>Environment</dt>
-          <dd><dl class="dl-horizontal">
-              {% for item in container.env %}
-              <dt>{{ item.name }}</dt>
-              <dd>{{ item.value }}</dd>
-              {% endfor %}
-          </dl></dd>
-          {% endif %}
-          {% if container.volume_mounts %}
-          <dt>Mounts</dt>
-          <dd><ul class="list-unstyled">
-              {% for mount in container.volume_mounts %}
-              <li>{{ mount.mount_path }} from {{ mount.name }}</li>
-              {% endfor %}
-          </li></dd>
-          {% endif %}
-        </dl>
+            </dd>
+            {% endif %}
+            {% if container.resources['requests'] %}
+            <dt>Requests</dt>
+            <dd>
+              <dl class="dl-horizontal">
+                {% for name, value in container.resources['requests'].items() %}
+                <dt>{{ name }}</dt>
+                <dd>{{ value }}</dd>
+                {% endfor %}
+              </dl>
+            </dd>
+            {% endif %}
+            {% if container.env %}
+            <dt>Environment</dt>
+            <dd>
+              <dl class="dl-horizontal">
+                {% for item in container.env %}
+                <dt>{{ item.name }}</dt>
+                <dd>{{ item.value }}</dd>
+                {% endfor %}
+              </dl>
+            </dd>
+            {% endif %}
+            {% if container.volume_mounts %}
+            <dt>Mounts</dt>
+            <dd>
+              <ul class="list-unstyled">
+                {% for mount in container.volume_mounts %}
+                <li>{{ mount.mount_path }} from {{ mount.name }}</li>
+                {% endfor %}
+              </ul>
+            </dd>
+            {% endif %}
+          </dl>
+        </div>
       </div>
-    </div>
-    {% endfor %}
+      {% endfor %}
     </div>
   </div>
 
@@ -158,8 +201,9 @@
       <ul class="list-unstyled">
         {% for msg in pod.spec.status %}
         <li><span class="status-ts">{{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}</span> <span class="status-type">{{ msg.type }}</span> <span class="status-message">{{ msg.message }}</span>
-        {% endfor %}
-      </ul>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
   </div>
 
