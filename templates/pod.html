@@ -165,7 +165,7 @@
             </dd>
             {% endif %}
             {% endif %}
-            {% if container_status.last_state %}
+            {% if container_status.last_state.running or container_status.last_state.terminated or container_status.last_state.waiting %}
             <dt>Last state</dt>
             {% if container_status.last_state.running %}
             <dd>Running
