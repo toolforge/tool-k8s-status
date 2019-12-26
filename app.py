@@ -108,14 +108,14 @@ def pod(namespace, pod):
     if "pod" in ctx and ctx["pod"]:
         return flask.render_template("pod.html", **ctx)
     else:
-        flask.flash("Pod {} not found.".format(pod), "error")
+        flask.flash("Pod {} not found.".format(pod), "danger")
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
 
 
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors."""
-    flask.flash("Requested URL not found.", "error")
+    flask.flash("Requested URL not found.", "danger")
     return flask.redirect(flask.url_for("home"))
 
 
