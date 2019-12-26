@@ -35,23 +35,31 @@
         <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
         <dt>Labels</dt>
         <dd>
+          {% if pod.metadata.labels %}
           {% for key, value in pod.metadata.labels.items() %}
           <span class="label label-outline label-info">{{ key }}={{ value }}</span>
           {% endfor %}
+          {% endif %}
         </dd>
         <dt>Annotations</dt>
         <dd>
+          {% if pod.metadata.annotations %}
           {% for key, value in pod.metadata.annotations.items() %}
           <span class="label label-outline label-default">{{ key }}: {{ value }}</span>
           {% endfor %}
+          {% endif %}
         </dd>
         <dt>IP</dt>
         <dd>{{ pod.status.pod_ip }}</dd>
         <dt>Controlled by:</dt>
         <dd>
+          {% if pod.metadata.owner_references %}
           {% for ref in pod.metadata.owner_references %}
           <span>{{ ref.kind }}/{{ ref.name }}</span>
           {% endfor %}
+          {% else %}
+          &lt;none&gt;
+          {% endif %}
         </dd>
       </dl>
     </div>
@@ -66,7 +74,7 @@
     </div>
     <div class="panel-body panel-group">
       {% for container in pod.spec.containers %}
-      {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name)|list|first %}
+      {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name) %}
       <div class="panel panel-default">
         <div class="panel-heading">
           <h4 class="panel-title">
@@ -85,25 +93,36 @@
             {% if container.ports %}
             <dt>Port</dt>
             <dd>
-              {% for port in container.ports -%}
+              {% if container.ports %}
+              {% for port in container.ports %}
               {{ port.container_port }}/{{ port.protocol }}
-              {%- endfor %}
+              {% endfor %}
+              {% else %}
+              &lt;none&gt;
+              {% endif %}
             </dd>
             <dt>Host port</dt>
             <dd>
-              {% for port in container.ports -%}
+              {% if container.ports %}
+              {% for port in container.ports %}
               {{ port.host_port }}/{{ port.protocol }}
-              {%- endfor %}
+              {% endfor %}
+              {% else %}
+              &lt;none&gt;
+              {% endif %}
             </dd>
             {% endif %}
+            {% if container.command %}
             <dt>Command</dt>
             <dd>
               <ul class="list-unstyled">
-                {% for cmd in container.command -%}
+                {% for cmd in container.command %}
                 <li>{{ cmd }}</li>
-                {%- endfor %}
+                {% endfor %}
               </ul>
             </dd>
+            {% endif %}
+            {% if container_status.state %}
             <dt>State</dt>
             {% if container_status.state.running %}
             <dd>Running
@@ -116,18 +135,22 @@
             {% if container_status.state.terminated %}
             <dd>Terminated
               <dl class="dl-indent">
+                <dt>Reason</dt>
+                <dd>{{ container_status.state.terminated.reason }}</dd>
+                <dt>Exit code</dt>
+                <dd>{{ container_status.state.terminated.exit_code }}</dd>
+                {% if container_status.state.terminated.message %}
+                <dt>Message</dt>
+                <dd>{{ container_status.state.terminated.message }}</dd>
+                {% endif %}
+                {% if container_status.state.terminated.signal %}
+                <dt>Signal</dt>
+                <dd>{{ container_status.state.terminated.signal }}</dd>
+                {% endif %}
                 <dt>Started</dt>
                 <dd>{{ container_status.state.terminated.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
                 <dt>Finished</dt>
                 <dd>{{ container_status.state.terminated.finished_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
-                <dt>Exit code</dt>
-                <dd>{{ container_status.state.terminated.exit_code }}</dd>
-                <dt>Message</dt>
-                <dd>{{ container_status.state.terminated.message }}</dd>
-                <dt>Reason</dt>
-                <dd>{{ container_status.state.terminated.reason }}</dd>
-                <dt>Signal</dt>
-                <dd>{{ container_status.state.terminated.signal }}</dd>
               </dl>
             </dd>
             {% endif %}
@@ -140,6 +163,50 @@
                 <dd>{{ container_status.state.waiting.message }}</dd>
               </dl>
             </dd>
+            {% endif %}
+            {% endif %}
+            {% if container_status.last_state %}
+            <dt>Last state</dt>
+            {% if container_status.last_state.running %}
+            <dd>Running
+              <dl class="dl-indent">
+                <dt>Started</dt>
+                <dd>{{ container_status.last_state.running.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
+              </dl>
+            </dd>
+            {% endif %}
+            {% if container_status.last_state.terminated %}
+            <dd>Terminated
+              <dl class="dl-indent">
+                <dt>Reason</dt>
+                <dd>{{ container_status.last_state.terminated.reason }}</dd>
+                <dt>Exit code</dt>
+                <dd>{{ container_status.last_state.terminated.exit_code }}</dd>
+                {% if container_status.last_state.terminated.message %}
+                <dt>Message</dt>
+                <dd>{{ container_status.last_state.terminated.message }}</dd>
+                {% endif %}
+                {% if container_status.last_state.terminated.signal %}
+                <dt>Signal</dt>
+                <dd>{{ container_status.last_state.terminated.signal }}</dd>
+                {% endif %}
+                <dt>Started</dt>
+                <dd>{{ container_status.last_state.terminated.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
+                <dt>Finished</dt>
+                <dd>{{ container_status.last_state.terminated.finished_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
+              </dl>
+            </dd>
+            {% endif %}
+            {% if container_status.last_state.waiting %}
+            <dd>Waiting
+              <dl class="dl-indent">
+                <dt>Reason</dt>
+                <dd>{{ container_status.last_state.waiting.reason }}</dd>
+                <dt>Message</dt>
+                <dd>{{ container_status.last_state.waiting.message }}</dd>
+              </dl>
+            </dd>
+            {% endif %}
             {% endif %}
             <dt>Ready</dt>
             <dd>{{ container_status.ready }}</dd>
@@ -197,6 +264,7 @@
     </div>
   </div>
 
+  {% if pod.status.conditions %}
   <div class="panel panel-default">
     <div class="panel-heading" role="tab">
       <h3 class="panel-title">
@@ -218,7 +286,9 @@
       </ul>
     </div>
   </div>
+  {% endif %}
 
+  {% if pod.spec.volumes %}
   <div class="panel panel-default">
     <div class="panel-heading" role="tab">
       <h3 class="panel-title">
@@ -255,6 +325,7 @@
       </dl>
     </div>
   </div>
+  {% endif %}
 
   <div class="panel panel-default">
     <div id="yaml-heading" class="panel-heading" role="tab">
