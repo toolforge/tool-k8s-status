@@ -38,5 +38,8 @@
 }
 
 .dl-indent dd {
-    margin-left: 40px;
+  margin-left: 40px;
+}
+dd .dl-indent {
+  margin-bottom: 0;
 }
