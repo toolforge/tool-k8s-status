@@ -43,3 +43,7 @@
 dd .dl-indent {
   margin-bottom: 0;
 }
+
+dd ul, dd ol {
+  margin-bottom: 0;
+}
