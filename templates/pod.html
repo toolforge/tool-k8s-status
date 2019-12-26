@@ -87,7 +87,9 @@
                 {% for cmd in container.command %}<li>{{ cmd }}</li>{% endfor %}
             </ul></dd>
             <dt>State</dt>
-            <dd>{% for key, value in pod.status.container_statuses|selectattr('name', container.name)|map(attribute='state').items() %}
+            <dd>
+              {% set states = pod.status.container_statuses|selectattr('name', container.name)|map(attribute='state')|dictsort %}
+              {% for key, value in states.items() %}
               {{ key }}
               <dl class="dl-horizontal">
                 {% for label, data in value %}
@@ -97,9 +99,9 @@
               </dl>
               {% endfor %}</dd>
               <dt>Ready</dt>
-              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready') }}</dd>
+              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready')|first() }}</dd>
               <dt>Restart count</dt>
-              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count') }}</dd>
+              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count')|first() }}</dd>
               <dt>Limits</dt>
               <dd><dl class="dl-horizontal">
                 {% for type, value in container.resources['limits'].items() %}
