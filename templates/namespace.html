@@ -12,9 +12,13 @@
 </div>
 
 <div class="panel-group" role="tablist">
+  {% if pods and pods["items"] %}
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h3 class="panel-title">Pods</h3>
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-modal-window"></span>
+        Pods
+      </h3>
     </div>
     <table class="table table-condensed table-hover tablesorter">
       <thead>
@@ -47,6 +51,165 @@
       </tbody>
     </table>
   </div>
+  {% endif %}
+
+  {% if services and services["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-transfer"></span>
+        Services
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Cluster IP</th>
+          <th>External IP</th>
+          <th>Port(s)</th>
+          <th>Age</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for service in services["items"] %}
+        <tr>
+          <td>{{ service.metadata.name }}</td>
+          <td>{{ service.spec.type }}</td>
+          <td>{{ service.spec.cluster_ip }}</td>
+          <td>{{ service.spec.external_ips|join(' ') }}</td>
+          <td>
+            {% for port in service.spec.ports %}
+            {{ port.port }}{% if port.target_port and port.target_port != port.port %}:{{ port.target_port }}{% endif %}/{{ port.protocol }}
+            {% endfor %}
+          </td>
+          <td class="text-right">{{ service.metadata.creation_timestamp|summarize }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if daemonsets and daemonsets["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-import"></span>
+        DaemonSets
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if deployments and deployments["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+        Deployments
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if replicasets and replicasets["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-duplicate"></span>
+        ReplicaSets
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if statefulsets and statefulsets["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-object-align-left"></span>
+        StatefulSets
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if autoscalers and autoscalers["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-resize-horizontal"></span>
+        HorizontalPodAutoscalers
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if jobs and jobs["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-file"></span>
+        Jobs
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if cronjobs and cronjobs["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-time"></span>
+        CronJobs
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
 

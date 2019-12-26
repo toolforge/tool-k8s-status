@@ -67,6 +67,20 @@ def get_pods(namespace, cached=True):
     return data
 
 
+def get_services(namespace, cached=True):
+    """Get a list of all services in a namespace."""
+    key = "services:{}".format(namespace)
+    data = cache().get(key) if cached else None
+    if not data:
+        v1 = corev1_client()
+        data = {
+            "items": v1.list_namespaced_service(namespace=namespace).items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
 def get_all_pods(cached=True):
     """Get a list of all pods."""
     key = "pods:__all__"

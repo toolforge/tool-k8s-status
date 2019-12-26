@@ -86,7 +86,12 @@ def namespace(namespace):
     }
     try:
         cached = "purge" not in flask.request.args
-        ctx.update({"pods": k8s.client.get_pods(namespace, cached=cached)})
+        ctx.update(
+            {
+                "pods": k8s.client.get_pods(namespace, cached=cached),
+                "services": k8s.client.get_services(namespace, cached=cached),
+            }
+        )
     except Exception:
         app.logger.exception("Error collecting namespace %s", namespace)
     return flask.render_template("namespace.html", **ctx)
