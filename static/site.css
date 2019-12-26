@@ -36,3 +36,7 @@
 .label-outline.label-danger {
   border-color: #d9534f;
 }
+
+.dl-indent dd {
+    margin-left: 40px;
+}

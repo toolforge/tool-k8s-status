@@ -22,7 +22,7 @@
       </h3>
     </div>
     <div class="panel-body">
-      <dl class="dl-horizontal">
+      <dl class="dl-indent">
         <dt>Ready</dt>
         <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
         <dt>Status</dt>
@@ -35,23 +35,23 @@
         <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
         <dt>Labels</dt>
         <dd>
-          {% for key, value in pod.metadata.labels.items() -%}
+          {% for key, value in pod.metadata.labels.items() %}
           <span class="label label-outline label-info">{{ key }}={{ value }}</span>
-          {%- endfor %}
+          {% endfor %}
         </dd>
         <dt>Annotations</dt>
         <dd>
-          {% for key, value in pod.metadata.annotations.items() -%}
+          {% for key, value in pod.metadata.annotations.items() %}
           <span class="label label-outline label-default">{{ key }}: {{ value }}</span>
-          {%- endfor %}
+          {% endfor %}
         </dd>
         <dt>IP</dt>
-        <dd>{{ pod.spec.pod_ip }}</dd>
+        <dd>{{ pod.status.pod_ip }}</dd>
         <dt>Controlled by:</dt>
         <dd>
-          {% for ref in pod.metadata.owner_references -%}
+          {% for ref in pod.metadata.owner_references %}
           <span>{{ ref.kind }}/{{ ref.name }}</span>
-          {%- endfor %}
+          {% endfor %}
         </dd>
       </dl>
     </div>
@@ -60,7 +60,7 @@
   <div class="panel panel-default">
     <div class="panel-heading" role="tab">
       <h3 class="panel-title">
-        <span class="glyphicon glyphicon-picture"></span>
+        <span class="glyphicon glyphicon-tags"></span>
         Containers
       </h3>
     </div>
@@ -68,9 +68,14 @@
       {% for container in pod.spec.containers %}
       {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name)|list|first %}
       <div class="panel panel-default">
-        <div class="panel-heading">{{ container.name }}</div>
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <span class="glyphicon glyphicon-tag"></span>
+            {{ container.name }}
+          </h4>
+        </div>
         <div class="panel-body">
-          <dl class="dl-horizontal">
+          <dl class="dl-indent">
             <dt>Container id</dt>
             <dd>{{ container_status.container_id }}</dd>
             <dt>Image</dt>
@@ -102,7 +107,7 @@
             <dt>State</dt>
             {% if container_status.state.running %}
             <dd>Running
-              <dl class="dl-horizontal">
+              <dl class="dl-indent">
                 <dt>Started</dt>
                 <dd>{{ container_status.state.running.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
               </dl>
@@ -110,7 +115,7 @@
             {% endif %}
             {% if container_status.state.terminated %}
             <dd>Terminated
-              <dl class="dl-horizontal">
+              <dl class="dl-indent">
                 <dt>Started</dt>
                 <dd>{{ container_status.state.terminated.started_at.strftime('%Y-%m-%d %H:%M:%S %Z') }}</dd>
                 <dt>Finished</dt>
@@ -128,7 +133,7 @@
             {% endif %}
             {% if container_status.state.waiting %}
             <dd>Waiting
-              <dl class="dl-horizontal">
+              <dl class="dl-indent">
                 <dt>Reason</dt>
                 <dd>{{ container_status.state.waiting.reason }}</dd>
                 <dt>Message</dt>
@@ -143,7 +148,7 @@
             {% if container.resources['limits'] %}
             <dt>Limits</dt>
             <dd>
-              <dl class="dl-horizontal">
+              <dl class="dl-indent">
                 {% for name, value in container.resources['limits'].items() %}
                 <dt>{{ name }}</dt>
                 <dd>{{ value }}</dd>
@@ -154,7 +159,7 @@
             {% if container.resources['requests'] %}
             <dt>Requests</dt>
             <dd>
-              <dl class="dl-horizontal">
+              <dl class="dl-indent">
                 {% for name, value in container.resources['requests'].items() %}
                 <dt>{{ name }}</dt>
                 <dd>{{ value }}</dd>
@@ -165,7 +170,7 @@
             {% if container.env %}
             <dt>Environment</dt>
             <dd>
-              <dl class="dl-horizontal">
+              <dl class="dl-indent">
                 {% for item in container.env %}
                 <dt>{{ item.name }}</dt>
                 <dd>{{ item.value }}</dd>
