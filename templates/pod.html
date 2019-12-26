@@ -97,42 +97,44 @@
                 <dd>{{ data }}</dd>
                 {% endfor %}
               </dl>
-              {% endfor %}</dd>
-              <dt>Ready</dt>
-              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready')|first() }}</dd>
-              <dt>Restart count</dt>
-              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count')|first() }}</dd>
-              <dt>Limits</dt>
-              <dd><dl class="dl-horizontal">
-                {% for type, value in container.resources['limits'].items() %}
-                <dt>{{ type }}</dt>
-                <dd>{{ value }}</dd>
-                {% endfor %}
-              </dl></dd>
-              <dt>Requests</dt>
-              <dd><dl class="dl-horizontal">
-                {% for type, value in container.resources['requests'].items() %}
-                <dt>{{ type }}</dt>
-                <dd>{{ value }}</dd>
-                {% endfor %}
-            </dl></dd>
-            <dt>Environment</dt>
-            <dd><dl class="dl-horizontal">
-                {% for item in container.env %}
-                <dt>{{ item.name }}</dt>
-                <dd>{{ item.value }}</dd>
-                {% endfor %}
-            </dl></dd>
-            <dt>Mounts</dt>
-            <dd><ul class="list-unstyled">
-                {% for mount in container.volume_mounts %}
-                <li>{{ mount.mount_path }} from {{ mount.name }}</li>
-                {% endfor %}
-            </li></dd>
-          </dl>
-        </div>
+            {% endfor %}</dd>
+          <dt>Ready</dt>
+          <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready')|first() }}</dd>
+          <dt>Restart count</dt>
+          <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count')|first() }}</dd>
+          <dt>Limits</dt>
+          <dd><dl class="dl-horizontal">
+              {% for type, value in container.resources['limits'].items() %}
+              <dt>{{ type }}</dt>
+              <dd>{{ value }}</dd>
+              {% endfor %}
+          </dl></dd>
+          {% if container.resources['requests'] %}
+          <dt>Requests</dt>
+          <dd><dl class="dl-horizontal">
+              {% for type, value in container.resources['requests'].items() %}
+              <dt>{{ type }}</dt>
+              <dd>{{ value }}</dd>
+              {% endfor %}
+          </dl></dd>
+          {% endif %}
+          <dt>Environment</dt>
+          <dd><dl class="dl-horizontal">
+              {% for item in container.env %}
+              <dt>{{ item.name }}</dt>
+              <dd>{{ item.value }}</dd>
+              {% endfor %}
+          </dl></dd>
+          <dt>Mounts</dt>
+          <dd><ul class="list-unstyled">
+              {% for mount in container.volume_mounts %}
+              <li>{{ mount.mount_path }} from {{ mount.name }}</li>
+              {% endfor %}
+          </li></dd>
+        </dl>
       </div>
-      {% endfor %}
+    </div>
+    {% endfor %}
     </div>
   </div>
 
