@@ -22,7 +22,7 @@
           <th>Name</th>
           <th>Labels</th>
           <th>Ready</th>
-          <th>Phase</th>
+          <th>Status</th>
           <th>Restarts</th>
           <th>Node</th>
           <th>Age</th>
@@ -34,13 +34,13 @@
           <td><a href="{{ url_for('pod', namespace=namespace, pod=pod.metadata.name) }}">{{ pod.metadata.name }}</a></td>
           <td>
             {% for key, value in pod.metadata.labels.items() %}
-            <span class="label label-outline">{{ key }}:{{ value }}</span>
+            <span class="label label-outline">{{ key }}={{ value }}</span>
             {% endfor %}
           </td>
           <td class="text-center">{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</td>
           <td>{{ pod.status.phase }}</td>
           <td class="text-right">{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
-          <td>{{ pod.spec.containers[0].node_name }}</td>
+          <td>{{ pod.spec.node_name }}</td>
           <td class="text-right">{{ pod.status.start_time|summarize }}</td>
         </tr>
         {% endfor %}

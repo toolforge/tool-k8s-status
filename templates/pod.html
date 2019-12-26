@@ -25,21 +25,128 @@
       <dl class="dl-horizontal">
         <dt>Ready</dt>
         <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
-        <dt>Phase</dt>
+        <dt>Status</dt>
         <dd>{{ pod.status.phase }}</dd>
         <dt>Restarts</dt>
         <dd>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</dd>
         <dt>Node</dt>
-        <dd>{{ pod.status.host_ip }}</dd>
+        <dd>{{ pod.spec.node_name }}</dd>
         <dt>Age</dt>
         <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
         <dt>Labels</dt>
         <dd>
           {% for key, value in pod.metadata.labels.items() -%}
-          <span class="label label-outline">{{ key }}:{{ value }}</span>
+          <span class="label label-outline label-info">{{ key }}={{ value }}</span>
           {%- endfor %}
         </dd>
+        <dt>Annotations</dt>
+        <dd>
+          {% for key, value in pod.metadata.annotations.items() -%}
+          <span class="label label-outline label-default">{{ key }}: {{ value }}</span>
+          {%- endfor %}
+        </dd>
+        <dt>IP</dt>
+        <dd>{{ pod.spec.pod_ip }}</dd>
+        <dt>Controlled by:</dt>
+        <dd>{% for ref in pod.metadata.owner_references -%}
+          <span>{{ ref.kind }}/{{ ref.name }}</span>
+        {%- endfor %}</dd>
       </dl>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-picture"></span>
+        Containers
+      </h3>
+    </div>
+    <div class="panel-body panel-group">
+      {% for container in pod.spec.containers %}
+      <div class="panel panel-default">
+        <div class="panel-heading">{{ container.name }}</div>
+        <div class="panel-body">
+          <dl class="dl-horizontal">
+            <dt>Container id</dt>
+            <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='container_id') }}</dd>
+            <dt>Image</dt>
+            <dd>{{ container.image }}</dd>
+            <dt>Image id</dt>
+            <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='image_id') }}</dd>
+            <dt>Port</dt>
+            <dd>{% for port in container.ports -%}
+              {{ port.container_port }}/{{ port.protocol }}
+            {%- endfor %}</dd>
+            <dt>Host port</dt>
+            <dd>{% for port in container.ports -%}
+              {{ port.host_port }}/{{ port.protocol }}
+            {%- endfor %}</dd>
+            <dt>Command</dt>
+            <dd><ul class="list-unstyled">
+                {% for cmd in container.command %}<li>{{ cmd }}</li>{% endfor %}
+            </ul></dd>
+            <dt>State</dt>
+            <dd>{% for key, value in pod.status.container_statuses|selectattr('name', container.name)|map(attribute='state').items() %}
+              {{ key }}
+              <dl class="dl-horizontal">
+                {% for label, data in value %}
+                <dt>{{ label }}</dt>
+                <dd>{{ data }}</dd>
+                {% endfor %}
+              </dl>
+              {% endfor %}</dd>
+              <dt>Ready</dt>
+              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready') }}</dd>
+              <dt>Restart count</dt>
+              <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count') }}</dd>
+              <dt>Limits</dt>
+              <dd><dl class="dl-horizontal">
+                {% for type, value in container.resources['limits'].items() %}
+                <dt>{{ type }}</dt>
+                <dd>{{ value }}</dd>
+                {% endfor %}
+              </dl></dd>
+              <dt>Requests</dt>
+              <dd><dl class="dl-horizontal">
+                {% for type, value in container.resources['requests'].items() %}
+                <dt>{{ type }}</dt>
+                <dd>{{ value }}</dd>
+                {% endfor %}
+            </dl></dd>
+            <dt>Environment</dt>
+            <dd><dl class="dl-horizontal">
+                {% for item in container.env %}
+                <dt>{{ item.name }}</dt>
+                <dd>{{ item.value }}</dd>
+                {% endfor %}
+            </dl></dd>
+            <dt>Mounts</dt>
+            <dd><ul class="list-unstyled">
+                {% for mount in container.volume_mounts %}
+                <li>{{ mount.mount_path }} from {{ mount.name }}</li>
+                {% endfor %}
+            </li></dd>
+          </dl>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-blackboard"></span>
+        Conditions
+      </h3>
+    </div>
+    <div class="panel-body">
+      <ul class="list-unstyled">
+        {% for msg in pod.spec.status %}
+        <li><span class="status-ts">{{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}</span> <span class="status-type">{{ msg.type }}</span> <span class="status-message">{{ msg.message }}</span>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 

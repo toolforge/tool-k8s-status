@@ -19,5 +19,20 @@
 .label-outline {
   background:inhert;
   color:inherit;
-  border: solid 1px #5bc0de;
+  border: solid 1px #777;
+}
+.label-outline.label-primary {
+  border-color: #3371b7;
+}
+.label-outline.label-success {
+  border-color: #5cb85c;
+}
+.label-outline.label-info {
+  border-color: #5bc0de;
+}
+.label-outline.label-warning {
+  border-color: #f0ad4e;
+}
+.label-outline.label-danger {
+  border-color: #d9534f;
 }
