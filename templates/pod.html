@@ -64,16 +64,18 @@
     </div>
     <div class="panel-body panel-group">
       {% for container in pod.spec.containers %}
+      {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name)|list|first %}
       <div class="panel panel-default">
         <div class="panel-heading">{{ container.name }}</div>
         <div class="panel-body">
           <dl class="dl-horizontal">
             <dt>Container id</dt>
-            <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='container_id') }}</dd>
+            <dd>{{ container_status.container_id }}</dd>
             <dt>Image</dt>
             <dd>{{ container.image }}</dd>
             <dt>Image id</dt>
-            <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='image_id') }}</dd>
+            <dd>{{ container_status.image_id }}</dd>
+            {% if container.ports %}
             <dt>Port</dt>
             <dd>{% for port in container.ports -%}
               {{ port.container_port }}/{{ port.protocol }}
@@ -82,13 +84,14 @@
             <dd>{% for port in container.ports -%}
               {{ port.host_port }}/{{ port.protocol }}
             {%- endfor %}</dd>
+            {% endif %}
             <dt>Command</dt>
             <dd><ul class="list-unstyled">
                 {% for cmd in container.command %}<li>{{ cmd }}</li>{% endfor %}
             </ul></dd>
             <dt>State</dt>
             <dd>
-              {% set states = pod.status.container_statuses|selectattr('name', container.name)|map(attribute='state')|dictsort %}
+              {% set states = container_status.state|dictsort %}
               {% for key, value in states.items() %}
               {{ key }}
               <dl class="dl-horizontal">
@@ -99,9 +102,9 @@
               </dl>
             {% endfor %}</dd>
           <dt>Ready</dt>
-          <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready')|first() }}</dd>
+          <dd>{{ container_status.ready }}</dd>
           <dt>Restart count</dt>
-          <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count')|first() }}</dd>
+          <dd>{{ container_status.restart_count }}</dd>
           {% if container.resources['limits'] %}
           <dt>Limits</dt>
           <dd><dl class="dl-horizontal">
@@ -120,6 +123,7 @@
               {% endfor %}
           </dl></dd>
           {% endif %}
+          {% if container.env %}
           <dt>Environment</dt>
           <dd><dl class="dl-horizontal">
               {% for item in container.env %}
@@ -127,12 +131,15 @@
               <dd>{{ item.value }}</dd>
               {% endfor %}
           </dl></dd>
+          {% endif %}
+          {% if container.volume_mounts %}
           <dt>Mounts</dt>
           <dd><ul class="list-unstyled">
               {% for mount in container.volume_mounts %}
               <li>{{ mount.mount_path }} from {{ mount.name }}</li>
               {% endfor %}
           </li></dd>
+          {% endif %}
         </dl>
       </div>
     </div>
