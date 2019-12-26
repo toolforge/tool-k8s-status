@@ -204,11 +204,53 @@
     </div>
     <div class="panel-body">
       <ul class="list-unstyled">
-        {% for msg in pod.spec.status %}
-        <li><span class="status-ts">{{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}</span> <span class="status-type">{{ msg.type }}</span> <span class="status-message">{{ msg.message }}</span>
-          {% endfor %}
-        </ul>
-      </div>
+        {% for msg in pod.spec.status.conditions %}
+        <li>
+          {{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}
+          {{ msg.type }}
+          {{ msg.status }}
+          {{ msg.message }}
+          {{ msg.reason }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-hdd"></span>
+        Volumes
+      </h3>
+    </div>
+    <div class="panel-body">
+      <dl class="dl-indent">
+        {% for volume in pod.spec.volumes %}
+        <dd>{{ volume.name }}</dd>
+        <dt>
+          <dl class="dl-indent">
+            {% if volume.host_path %}
+            <dd>Type</dd>
+            <dt>HostPath (bare host directory volume)</dt>
+            <dd>Path</dd>
+            <dt>{{ volume.host_path.path }}</dt>
+            <dd>HostPathType</dd>
+            <dt>{{ volume.host_path.type }}</dt>
+            {% endif %}
+            {% if volume.secret %}
+            <dd>Type</dd>
+            <dt>Secret (a volume populated by a Secret)</dt>
+            <dd>SecretName</dd>
+            <dt>{{ volume.secret.secret_name }}</dt>
+            <dd>Optional</dd>
+            <dt>{{ volume.secret.optional }}</dt>
+            {% endif %}
+            {# TODO: handle more volume types #}
+          </dl>
+        </dt>
+        {% endfor %}
+      </dl>
     </div>
   </div>
 
