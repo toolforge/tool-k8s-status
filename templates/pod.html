@@ -74,7 +74,7 @@
     </div>
     <div class="panel-body panel-group">
       {% for container in pod.spec.containers %}
-      {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name) %}
+      {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name)|default([], true)|first %}
       <div class="panel panel-default">
         <div class="panel-heading">
           <h4 class="panel-title">
