@@ -17,7 +17,7 @@
 }
 
 .label-outline {
-  background:inhert !important;
+  background-color:inhert !important;
   color:inherit !important;
   border: solid 1px #777;
 }
