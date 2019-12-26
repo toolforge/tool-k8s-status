@@ -92,8 +92,8 @@
               {% for key, value in states.items() %}
               {{ key }}
               <dl class="dl-horizontal">
-                {% for label, data in value %}
-                <dt>{{ label }}</dt>
+                {% for name, data in value %}
+                <dt>{{ name }}</dt>
                 <dd>{{ data }}</dd>
                 {% endfor %}
               </dl>
@@ -102,18 +102,20 @@
           <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='ready')|first() }}</dd>
           <dt>Restart count</dt>
           <dd>{{ pod.status.container_statuses|selectattr('name', container.name)|map(attribute='restart_count')|first() }}</dd>
+          {% if container.resources['limits'] %}
           <dt>Limits</dt>
           <dd><dl class="dl-horizontal">
-              {% for type, value in container.resources['limits'].items() %}
-              <dt>{{ type }}</dt>
+              {% for name, value in container.resources['limits'].items() %}
+              <dt>{{ name }}</dt>
               <dd>{{ value }}</dd>
               {% endfor %}
           </dl></dd>
+          {% endif %}
           {% if container.resources['requests'] %}
           <dt>Requests</dt>
           <dd><dl class="dl-horizontal">
-              {% for type, value in container.resources['requests'].items() %}
-              <dt>{{ type }}</dt>
+              {% for name, value in container.resources['requests'].items() %}
+              <dt>{{ name }}</dt>
               <dd>{{ value }}</dd>
               {% endfor %}
           </dl></dd>
