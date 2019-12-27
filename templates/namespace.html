@@ -145,8 +145,22 @@
     </div>
     <table class="table table-condensed table-hover tablesorter">
       <thead>
+        <tr>
+          <th>Name</th>
+          <th>Ready</th>
+          <th>Up-to-date</th>
+          <th>Available</th>
+          <th>Age</th>
       </thead>
       <tbody>
+        {% for deployment in deployments %}
+        <tr>
+          <td>{{ deployment.metadata.name }}</td>
+          <td>{{ deployment.status.ready_replicas }}/{{ deployment.status.replicas }}</td>
+          <td>{{ deployment.status.updated_replicas }}</td>
+          <td>{{ deployment.status.available_replicas }}</td>
+          <td>{{ deployment.metadata.creation_timestamp|summarize }}</td>
+        {% endfor %}
       </tbody>
     </table>
   </div>

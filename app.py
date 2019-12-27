@@ -93,6 +93,9 @@ def namespace(namespace):
                 "daemonsets": k8s.client.get_daemonsets(
                     namespace, cached=cached
                 ),
+                "deployments": k8s.client.get_deployments(
+                    namespace, cached=cached
+                ),
             }
         )
     except Exception:

@@ -101,6 +101,20 @@ def get_daemonsets(namespace, cached=True):
     return data
 
 
+def get_deployments(namespace, cached=True):
+    """Get a list of all deployments in a namespace."""
+    key = "deployments:{}".format(namespace)
+    data = cache().get(key) if cached else None
+    if not data:
+        v1 = corev1_client()
+        data = {
+            "items": v1.list_namespaced_deployment(namespace=namespace).items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
 def get_all_pods(cached=True):
     """Get a list of all pods."""
     key = "pods:__all__"
