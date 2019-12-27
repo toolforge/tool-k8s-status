@@ -122,7 +122,7 @@ def get_replicasets(namespace, cached=True):
     if not data:
         v1 = appsv1_client()
         data = {
-            "items": v1.list_namespaced_replicaset(namespace=namespace).items,
+            "items": v1.list_namespaced_replica_set(namespace=namespace).items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
