@@ -90,6 +90,9 @@ def namespace(namespace):
             {
                 "pods": k8s.client.get_pods(namespace, cached=cached),
                 "services": k8s.client.get_services(namespace, cached=cached),
+                "daemonsets": k8s.client.get_daemonsets(
+                    namespace, cached=cached
+                ),
             }
         )
     except Exception:

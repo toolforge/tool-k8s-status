@@ -34,6 +34,12 @@ def corev1_client():
     return kubernetes.client.CoreV1Api()
 
 
+@functools.lru_cache()
+def appsv1_client():
+    """Get CoreV1 API client."""
+    return kubernetes.client.AppsV1Api()
+
+
 def get_version():
     """Get version information about the Kuberenetes cluster."""
     return kubernetes.client.VersionApi().get_code()
@@ -75,6 +81,20 @@ def get_services(namespace, cached=True):
         v1 = corev1_client()
         data = {
             "items": v1.list_namespaced_service(namespace=namespace).items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
+def get_daemonsets(namespace, cached=True):
+    """Get a list of all daemonsets in a namespace."""
+    key = "daemonsets:{}".format(namespace)
+    data = cache().get(key) if cached else None
+    if not data:
+        v1 = appsv1_client()
+        data = {
+            "items": v1.list_namespaced_daemon_set(namespace=namespace).items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
