@@ -96,6 +96,9 @@ def namespace(namespace):
                 "deployments": k8s.client.get_deployments(
                     namespace, cached=cached
                 ),
+                "replicasets": k8s.client.get_replicasets(
+                    namespace, cached=cached
+                ),
             }
         )
     except Exception:

@@ -115,6 +115,20 @@ def get_deployments(namespace, cached=True):
     return data
 
 
+def get_replicasets(namespace, cached=True):
+    """Get a list of all replicasets in a namespace."""
+    key = "replicasets:{}".format(namespace)
+    data = cache().get(key) if cached else None
+    if not data:
+        v1 = appsv1_client()
+        data = {
+            "items": v1.list_namespaced_replicaset(namespace=namespace).items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
 def get_all_pods(cached=True):
     """Get a list of all pods."""
     key = "pods:__all__"

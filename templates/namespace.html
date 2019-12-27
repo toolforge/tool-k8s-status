@@ -176,8 +176,24 @@
     </div>
     <table class="table table-condensed table-hover tablesorter">
       <thead>
+        <tr>
+          <th>Name</th>
+          <th>Desired</th>
+          <th>Current</th>
+          <th>Ready</th>
+          <th>Age</th>
+        </tr>
       </thead>
       <tbody>
+        {% for replicaset in replicasets["items"] %}
+        <tr>
+          <th>{{ replicaset.metadata.name }}</th>
+          <th>{{ replicaset.spec.replicas }}</th>
+          <th>{{ replicaset.status.replicas }}</th>
+          <th>{{ replicaset.status.ready_replicas }}</th>
+          <th>Age</th>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
