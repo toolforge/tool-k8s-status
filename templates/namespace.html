@@ -127,7 +127,7 @@
             <span class="label label-outline label-default">{{ key }}={{ value }}</span>
             {% endfor %}
           </td>
-          <td>{{ daemonset.metadata.creation_timestamp|summarize }}</td>
+          <td class="text-right">{{ daemonset.metadata.creation_timestamp|summarize }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -159,7 +159,7 @@
           <td>{{ deployment.status.ready_replicas }}/{{ deployment.status.replicas }}</td>
           <td>{{ deployment.status.updated_replicas }}</td>
           <td>{{ deployment.status.available_replicas }}</td>
-          <td>{{ deployment.metadata.creation_timestamp|summarize }}</td>
+          <td class="text-right">{{ deployment.metadata.creation_timestamp|summarize }}</td>
         {% endfor %}
       </tbody>
     </table>
@@ -191,7 +191,7 @@
           <th>{{ replicaset.spec.replicas }}</th>
           <th>{{ replicaset.status.replicas }}</th>
           <th>{{ replicaset.status.ready_replicas }}</th>
-          <th>{{ replicaset.metadata.creation_timestamp|summarize }}</th>
+          <th class="text-right">{{ replicaset.metadata.creation_timestamp|summarize }}</th>
         </tr>
         {% endfor %}
       </tbody>
@@ -209,8 +209,20 @@
     </div>
     <table class="table table-condensed table-hover tablesorter">
       <thead>
+        <tr>
+          <th>Name</th>
+          <th>Ready</th>
+          <th>Age</th>
+        </tr>
       </thead>
       <tbody>
+        {% for statefulset in statefulsets["items"] %}
+        <tr>
+          <th>{{ statefulset.metadata.name }}</th>
+          <th>{{ statefulset.status.ready_replicas }}/{{ statefulset.spec.replicas }}</th>
+          <th class="text-right">{{ statefulset.metadata.creation_timestamp|summarize }}</th>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>

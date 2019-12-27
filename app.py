@@ -99,6 +99,9 @@ def namespace(namespace):
                 "replicasets": k8s.client.get_replicasets(
                     namespace, cached=cached
                 ),
+                "statefulsets": k8s.client.get_statefulsets(
+                    namespace, cached=cached
+                ),
             }
         )
     except Exception:
