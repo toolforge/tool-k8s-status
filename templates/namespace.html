@@ -114,9 +114,9 @@
         </tr>
       </thead>
       <tbody>
-        {% for deamonset in deamonsets["items"] %}
+        {% for daemonset in daemonsets["items"] %}
         <tr>
-          <td>{{ deamonset.metadata.name }}</td>
+          <td>{{ daemonset.metadata.name }}</td>
           <td>{{ daemonset.status.desired_number_scheduled }}</td>
           <td>{{ daemonset.status.current_number_scheduled }}</td>
           <td>{{ daemonset.status.number_ready }}</td>
