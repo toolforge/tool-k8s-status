@@ -191,7 +191,7 @@
           <th>{{ replicaset.spec.replicas }}</th>
           <th>{{ replicaset.status.replicas }}</th>
           <th>{{ replicaset.status.ready_replicas }}</th>
-          <th>Age</th>
+          <th>{{ replicaset.metadata.creation_timestamp|summarize }}</th>
         </tr>
         {% endfor %}
       </tbody>
