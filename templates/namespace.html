@@ -187,11 +187,11 @@
       <tbody>
         {% for replicaset in replicasets["items"] %}
         <tr>
-          <th>{{ replicaset.metadata.name }}</th>
-          <th>{{ replicaset.spec.replicas }}</th>
-          <th>{{ replicaset.status.replicas }}</th>
-          <th>{{ replicaset.status.ready_replicas }}</th>
-          <th class="text-right">{{ replicaset.metadata.creation_timestamp|summarize }}</th>
+          <td>{{ replicaset.metadata.name }}</td>
+          <td>{{ replicaset.spec.replicas }}</td>
+          <td>{{ replicaset.status.replicas }}</td>
+          <td>{{ replicaset.status.ready_replicas }}</td>
+          <th class="text-right">{{ replicaset.metadata.creation_timestamp|summarize }}</td>
         </tr>
         {% endfor %}
       </tbody>
