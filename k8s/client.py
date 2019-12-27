@@ -106,7 +106,7 @@ def get_deployments(namespace, cached=True):
     key = "deployments:{}".format(namespace)
     data = cache().get(key) if cached else None
     if not data:
-        v1 = corev1_client()
+        v1 = appsv1_client()
         data = {
             "items": v1.list_namespaced_deployment(namespace=namespace).items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
