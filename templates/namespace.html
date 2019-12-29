@@ -92,6 +92,35 @@
   </div>
   {% endif %}
 
+  {% if ingresses and ingresses["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-cloud-download"></span>
+        Ingresses
+      </h3>
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+        <th>Name</th>
+        <th>Hosts</th>
+        <th>Age</th>
+      </thead>
+      <tbody>
+        {% for ingress in ingresses["items"] %}
+        <tr>
+          <td>{{ ingress.metadata.name }}</td>
+          <td>
+            {{ ingress.spec.rules|map(attribute="host")|join(', ') }}
+          </td>
+          <td class="text-right">{{ ingress.metadata.creation_timestamp|summarize }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   {% if daemonsets and daemonsets["items"] %}
   <div class="panel panel-default">
     <div class="panel-heading">
