@@ -218,9 +218,9 @@
       <tbody>
         {% for statefulset in statefulsets["items"] %}
         <tr>
-          <th>{{ statefulset.metadata.name }}</th>
-          <th>{{ statefulset.status.ready_replicas }}/{{ statefulset.spec.replicas }}</th>
-          <th class="text-right">{{ statefulset.metadata.creation_timestamp|summarize }}</th>
+          <td>{{ statefulset.metadata.name }}</td>
+          <td>{{ statefulset.status.ready_replicas }}/{{ statefulset.spec.replicas }}</td>
+          <td class="text-right">{{ statefulset.metadata.creation_timestamp|summarize }}</td>
         </tr>
         {% endfor %}
       </tbody>
