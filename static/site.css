@@ -47,3 +47,7 @@ dd .dl-indent {
 dd ul, dd ol {
   margin-bottom: 0;
 }
+
+.ns-active {
+  font-weight: bold;
+}

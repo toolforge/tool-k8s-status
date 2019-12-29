@@ -161,7 +161,7 @@ def get_all_pods(cached=True):
 
 
 def get_pods_by_namespace(cached=True):
-    """Get a collection of all Pods groups by namespace."""
+    """Get a collection of all Pods grouped by namespace."""
     key = "toolpods"
     data = cache().get(key) if cached else None
     if not data:

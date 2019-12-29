@@ -72,7 +72,14 @@ def namespaces():
     ctx = {}
     try:
         cached = "purge" not in flask.request.args
-        ctx.update({"namespaces": k8s.client.get_namespaces(cached=cached)})
+        ctx.update(
+            {
+                "namespaces": k8s.client.get_namespaces(cached=cached),
+                "active": k8s.client.get_pods_by_namespace(cached=cached)[
+                    "namespaces"
+                ].keys(),
+            }
+        )
     except Exception:
         app.logger.exception("Error collecting namespaces")
     return flask.render_template("namespaces.html", **ctx)

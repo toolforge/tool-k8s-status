@@ -10,7 +10,7 @@
     <div class="panel-body">
       <ul class="list-unstyled column-list">
         {% for ns in namespaces["items"] %}
-        <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
+        <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow" {% if ns.metadata.name in active %}class="ns-active"{% endif %}>{{ ns.metadata.name }}</a></li>
         {% endfor %}
       </ul>
     </div>
