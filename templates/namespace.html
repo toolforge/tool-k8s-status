@@ -37,7 +37,7 @@
         <tr>
           <td><a href="{{ url_for('pod', namespace=namespace, pod=pod.metadata.name) }}">{{ pod.metadata.name }}</a></td>
           <td>
-            {% for key, value in pod.metadata.labels.items() %}
+            {% for key, value in pod.metadata.labels|dictsort %}
             <span class="label label-outline label-info">{{ key }}={{ value }}</span>
             {% endfor %}
           </td>
@@ -123,7 +123,7 @@
           <td>{{ daemonset.status.updated_number_scheduled }}</td>
           <td>{{ daemonset.status.number_available }}</td>
           <td>
-            {% for key, value in daemonset.spec.template.spec.node_selector.items() %}
+            {% for key, value in daemonset.spec.template.spec.node_selector|dictsort %}
             <span class="label label-outline label-default">{{ key }}={{ value }}</span>
             {% endfor %}
           </td>

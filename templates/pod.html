@@ -36,7 +36,7 @@
         <dt>Labels</dt>
         <dd>
           {% if pod.metadata.labels %}
-          {% for key, value in pod.metadata.labels.items() %}
+          {% for key, value in pod.metadata.labels|dictsort %}
           <span class="label label-outline label-info">{{ key }}={{ value }}</span>
           {% endfor %}
           {% endif %}
@@ -44,7 +44,7 @@
         <dt>Annotations</dt>
         <dd>
           {% if pod.metadata.annotations %}
-          {% for key, value in pod.metadata.annotations.items() %}
+          {% for key, value in pod.metadata.annotations|dictsort %}
           <span class="label label-outline label-default">{{ key }}: {{ value }}</span>
           {% endfor %}
           {% endif %}
@@ -217,7 +217,7 @@
             <dt>Limits</dt>
             <dd>
               <dl class="dl-indent">
-                {% for name, value in container.resources['limits'].items() %}
+                {% for name, value in container.resources['limits']|dictsort %}
                 <dt>{{ name }}</dt>
                 <dd>{{ value }}</dd>
                 {% endfor %}
@@ -228,7 +228,7 @@
             <dt>Requests</dt>
             <dd>
               <dl class="dl-indent">
-                {% for name, value in container.resources['requests'].items() %}
+                {% for name, value in container.resources['requests']|dictsort %}
                 <dt>{{ name }}</dt>
                 <dd>{{ value }}</dd>
                 {% endfor %}

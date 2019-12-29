@@ -19,7 +19,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for image, pods in images["items"].items() %}
+        {% for image, pods in images["items"]|dictsort %}
         {% set repo, name_tag = image.split("/", 1) %}
         {% set name, tag = name_tag.split(":", 1) %}
         <tr>
