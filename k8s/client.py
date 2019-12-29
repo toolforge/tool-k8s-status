@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Kubernetes client and data collection."""
+import collections
 import datetime
 import functools
 
@@ -163,15 +164,13 @@ def get_pods_by_namespace(cached=True):
     data = cache().get(key) if cached else None
     if not data:
         data = {
-            "namespaces": {},
+            "namespaces": collections.defaultdict(list),
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "active_namespaces": 0,
             "total_pods": 0,
         }
         for pod in get_all_pods(cached=cached)["items"]:
             ns = pod.metadata.namespace
-            if ns not in data["namespaces"]:
-                data["namespaces"][ns] = []
             data["namespaces"][ns].append(pod)
             data["total_pods"] += 1
         data["active_namespaces"] = len(data["namespaces"].keys())
@@ -189,5 +188,23 @@ def get_pod(namespace, pod, cached=True):
             "pod": v1.read_namespaced_pod(name=pod, namespace=namespace),
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
+        cache().set(key, data, timeout=300)
+    return data
+
+
+def get_images(cached=True):
+    """Get information about Docker images in use in the cluster."""
+    key = "images"
+    data = cache().get(key) if cached else None
+    if not data:
+        data = {
+            "items": collections.defaultdict(list),
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        for pod in get_all_pods(cached=cached)["items"]:
+            for container in pod.spec.containers:
+                data["items"][container.image].append(
+                    (pod.metadata.namespace, pod.metadata.name)
+                )
         cache().set(key, data, timeout=300)
     return data

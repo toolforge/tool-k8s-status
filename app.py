@@ -130,6 +130,18 @@ def pod(namespace, pod):
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
 
 
+@app.route("/images/")
+def images():
+    """List all images in use on the cluster."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update({"images": k8s.client.get_images(cached=cached)})
+    except Exception:
+        app.logger.exception("Error collecting images")
+    return flask.render_template("images.html", **ctx)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors."""

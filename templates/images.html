@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}Images - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="panel-group" role="tablist">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <span class="glyphicon glyphicon-picture"></span>
+      Images
+    </div>
+    <table class="table table-condensed table-hover tablesorter">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Pods</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for image, pods in images["items"].items() %}
+        <tr>
+          <td>{{ image }}</td>
+          <td class="text-right">{{ pods|length }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock content %}
+
+{% block css %}
+<link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery.tablesorter/2.28.5/css/theme.default.min.css" crossorigin="anonymous">
+{% endblock css %}
+
+{% block js %}
+{{ super() }}
+<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery.tablesorter/2.28.5/js/jquery.tablesorter.min.js" crossorigin="anonymous"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  $(".tablesorter").tablesorter();
+});
+</script>
+{% endblock js %}
+{# vim:sw=2:ts=2:sts=2:et: #}
