@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
-{% block title %}Image {{ image }} - {{ super() }}{% endblock %}
+{% block title %}Image {{ name }} - {{ super() }}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
   <li><a href="{{ url_for('images') }}" rel="nofollow">Images</a></li>
-  <li class="active">{{ image }}</li>
+  <li class="active">{{ name }}</li>
 </ol>
 <div class="page-header">
   <h1>Image: {{ image }}</a></h1>
