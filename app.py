@@ -142,6 +142,22 @@ def images():
     return flask.render_template("images.html", **ctx)
 
 
+@app.route("/images/<name>/")
+def image(name):
+    """List pods using an image."""
+    ctx = {
+        "image": name,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {"pods": k8s.client.get_images(cached=cached)["items"][name]}
+        )
+    except Exception:
+        app.logger.exception("Error collecting images")
+    return flask.render_template("images.html", **ctx)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors."""

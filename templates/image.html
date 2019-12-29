@@ -1,26 +1,35 @@
 {% extends "layout.html" %}
 
-{% block title %}Images - {{ super() }}{% endblock %}
+{% block title %}Image {{ image }} - {{ super() }}{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="{{ url_for('images') }}" rel="nofollow">Images</a></li>
+  <li class="active">{{ image }}</li>
+</ol>
+<div class="page-header">
+  <h1>Image: {{ image }}</a></h1>
+</div>
+
+
 <div class="panel-group" role="tablist">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <span class="glyphicon glyphicon-picture"></span>
-      Images
+      <span class="glyphicon glyphicon-modal-window"></span>
+      Pods
     </div>
     <table class="table table-condensed table-hover tablesorter">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Pods</th>
+          <th>Namespace</th>
+          <th>Pod</th>
         </tr>
       </thead>
       <tbody>
-        {% for image, pods in images["items"].items() %}
+        {% for pod in pods %}
         <tr>
-          <td><a href="{{ url_for('image', name=image) }}">{{ image }}</a></td>
-          <td class="text-right">{{ pods|length }}</td>
+          <td><a href="{{ url_for('namespace', namespace=pod.0) }}">{{ pod.0 }}</a></td>
+          <td><a href="{{ url_for('pod', namespace=pod.0, pod=pod.1) }}">{{ pod.1 }}</a></td>
         </tr>
         {% endfor %}
       </tbody>
