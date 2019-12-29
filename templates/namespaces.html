@@ -6,7 +6,7 @@
     <div class="panel-heading">
       <h3 class="panel-title">
         <span class="glyphicon glyphicon-folder-open"></span>
-        Active namespacees
+        Active namespaces
       </h3>
     </div>
     <div class="panel-body">
@@ -19,14 +19,15 @@
   </div>
 
   <div class="panel panel-default">
-    <div id="all-ns-heading" class="panel-heading" role="tab">
+    <div id="allns-heading" class="panel-heading" role="tab">
       <h3 class="panel-title">
-        <a href="#all-ns-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="all-ns-body">
+        <a href="#allns-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="allns-body">
           <span class="glyphicon glyphicon-folder-open"></span>
-          Namespacees
-        </h3>
-      </div>
-    <div id="all-ns-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="all-ns-heading">
+          Namespaces
+        </a>
+      </h3>
+    </div>
+    <div id="allns-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="allns-heading">
       <ul class="list-unstyled column-list">
         {% for ns in namespaces["items"] %}
         {% set class = "active" if ns.metadata.name in active else "inactive" %}
