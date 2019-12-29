@@ -4,8 +4,10 @@
 <div class="panel-group" role="tablist">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <span class="glyphicon glyphicon-folder-open"></span>
-      Active namespacees
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-folder-open"></span>
+        Active namespacees
+      </h3>
     </div>
     <div class="panel-body">
       <ul class="list-unstyled column-list">
@@ -15,12 +17,15 @@
       </ul>
     </div>
   </div>
+
   <div class="panel panel-default">
     <div id="all-ns-heading" class="panel-heading" role="tab">
-      <a href="#all-ns-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="all-ns-body">
-      <span class="glyphicon glyphicon-folder-open"></span>
-      Namespacees
-    </div>
+      <h3 class="panel-title">
+        <a href="#all-ns-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="all-ns-body">
+          <span class="glyphicon glyphicon-folder-open"></span>
+          Namespacees
+        </h3>
+      </div>
     <div id="all-ns-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="all-ns-heading">
       <ul class="list-unstyled column-list">
         {% for ns in namespaces["items"] %}
@@ -30,6 +35,7 @@
       </ul>
     </div>
   </div>
+
 </div>
 {% endblock %}
 {# vim:sw=2:ts=2:sts=2:et: #}
