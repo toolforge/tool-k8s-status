@@ -154,8 +154,8 @@ def image(name):
             {"pods": k8s.client.get_images(cached=cached)["items"][name]}
         )
     except Exception:
-        app.logger.exception("Error collecting images")
-    return flask.render_template("images.html", **ctx)
+        app.logger.exception("Error collecting image '%s'", name)
+    return flask.render_template("image.html", **ctx)
 
 
 @app.errorhandler(404)
