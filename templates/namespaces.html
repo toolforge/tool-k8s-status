@@ -5,15 +5,31 @@
   <div class="panel panel-default">
     <div class="panel-heading">
       <span class="glyphicon glyphicon-folder-open"></span>
-      Namespacees
+      Active namespacees
     </div>
     <div class="panel-body">
       <ul class="list-unstyled column-list">
+        {% for ns in namespaces["items"] if ns.metadata.name in active %}
+        <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div id="all-ns-heading" class="panel-heading" role="tab">
+      <a href="#all-ns-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="all-ns-body">
+      <span class="glyphicon glyphicon-folder-open"></span>
+      Namespacees
+    </div>
+    <div id="all-ns-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="all-ns-heading">
+      <ul class="list-unstyled column-list">
         {% for ns in namespaces["items"] %}
-        <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow" {% if ns.metadata.name in active %}class="ns-active"{% endif %}>{{ ns.metadata.name }}</a></li>
+        {% set class = "active" if ns.metadata.name in active else "inactive" %}
+        <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow" class="ns-{{ active }}">{{ ns.metadata.name }}</a></li>
         {% endfor %}
       </ul>
     </div>
   </div>
 </div>
 {% endblock %}
+{# vim:sw=2:ts=2:sts=2:et: #}
