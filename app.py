@@ -142,7 +142,7 @@ def images():
     return flask.render_template("images.html", **ctx)
 
 
-@app.route("/images/<name>/")
+@app.route("/images/<path:name>/")
 def image(name):
     """List pods using an image."""
     ctx = {
