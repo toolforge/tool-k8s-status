@@ -14,24 +14,24 @@
           <td>{{ '{:,}'.format(pods.active_namespaces) }}</td>
         </tr>
         <tr>
-          <th>Number of pods</th>
+          <th>Active pods</th>
           <td>{{ '{:,}'.format(pods.total_pods) }}</td>
         </tr>
         <tr>
-          <th>Master nodes</th>
-          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+          <th>Control nodes</th>
+          <td>{{ '{:,}'.format(metrics.control_nodes) }}</td>
         </tr>
         <tr>
           <th>Worker nodes</th>
-          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+          <td>{{ '{:,}'.format(metrics.worker_nodes) }}</td>
         </tr>
         <tr>
-          <th>CPU</th>
-          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+          <th>Amount of RAM in use (in MBs)</th>
+          <td>{{ '{:,}'.format(metrics.mem_used_mb) }}</td>
         </tr>
         <tr>
-          <th>Memory (GiB)</th>
-          <td><abbr title="See https://phabricator.wikimedia.org/T241381">??</abbr></td>
+          <th>Number of virtual CPUs in use</th>
+          <td>{{ '{:,}'.format(metrics.cpu_used) }}</td>
         </tr>
         <tr>
           <th>Kubernetes version</th>

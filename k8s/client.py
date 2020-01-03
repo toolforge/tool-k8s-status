@@ -47,6 +47,12 @@ def extV1b1_client():
     return kubernetes.client.ExtensionsV1beta1Api()
 
 
+@functools.lru_cache()
+def custom_client():
+    """Get CustomObjects API client."""
+    return kubernetes.client.CustomObjectsApi()
+
+
 def get_version():
     """Get version information about the Kuberenetes cluster."""
     return kubernetes.client.VersionApi().get_code()
@@ -228,5 +234,57 @@ def get_images(cached=True):
                 data["items"][container.image].append(
                     (pod.metadata.namespace, pod.metadata.name)
                 )
+        cache().set(key, data, timeout=300)
+    return data
+
+
+def get_node_metrics(cached=True):
+    key = "metrics:nodes"
+    data = cache().get(key) if cached else None
+    if not data:
+        custom = custom_client()
+        data = {
+            "items": custom.list_cluster_custom_object(
+                "metrics.k8s.io", "v1beta1", "nodes").items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
+def get_pod_metrics(cached=True):
+    key = "metrics:pods"
+    data = cache().get(key) if cached else None
+    if not data:
+        custom = custom_client()
+        data = {
+            "items": custom.list_cluster_custom_object(
+                "metrics.k8s.io", "v1beta1", "pods").items,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        cache().set(key, data, timeout=300)
+    return data
+
+
+def get_summary_metrics(cached=True):
+    key = "metrics:summary"
+    data = cache().get(key) if cached else None
+    if not data:
+        data = {
+            "control_nodes": 0,
+            "worker_nodes": 0,
+            "cpu_used": 0,
+            "mem_used_mb": 0,
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        for node in get_node_metrics(cached):
+            if "-control-" in node.metadata.name:
+                data["control_nodes"] += 1
+            elif "-worker-" in node.metadata.nam:
+                data["worker_nodes"] += 1
+            # Convert Ki to Mi
+            data["mem_used_mb"] += int(node.usage.memory[:-2]) * 2**-10
+            # Convert nano to whole
+            data["cpu_used"] += int(node.usage.cpu[:-1]) * 10**-9
         cache().set(key, data, timeout=300)
     return data

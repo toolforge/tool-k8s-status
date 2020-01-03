@@ -59,6 +59,7 @@ def home():
             {
                 "version": k8s.client.get_version(),
                 "pods": k8s.client.get_pods_by_namespace(cached=cached),
+                "metrics": k8s.client.get_summary_metrics(cached=cached),
             }
         )
     except Exception:
