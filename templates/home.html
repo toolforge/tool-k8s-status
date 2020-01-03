@@ -11,31 +11,31 @@
       <table class="table table-condensed">
         <tr>
           <th>Active namespaces</th>
-          <td>{{ '{:,}'.format(pods.active_namespaces) }}</td>
+          <td class="text-right">{{ '{:,}'.format(pods.active_namespaces) }}</td>
         </tr>
         <tr>
           <th>Active pods</th>
-          <td>{{ '{:,}'.format(pods.total_pods) }}</td>
+          <td class="text-right">{{ '{:,}'.format(pods.total_pods) }}</td>
         </tr>
         <tr>
           <th>Control nodes</th>
-          <td>{{ '{:,}'.format(metrics.control_nodes) }}</td>
+          <td class="text-right">{{ '{:,}'.format(metrics.control_nodes) }}</td>
         </tr>
         <tr>
           <th>Worker nodes</th>
-          <td>{{ '{:,}'.format(metrics.worker_nodes) }}</td>
+          <td class="text-right">{{ '{:,}'.format(metrics.worker_nodes) }}</td>
         </tr>
         <tr>
           <th>Amount of RAM in use (in MBs)</th>
-          <td>{{ '{:,}'.format(metrics.mem_used_mb) }}</td>
+          <td class="text-right">{{ '{:,}'.format(metrics.mem_used_mb|round|int) }}</td>
         </tr>
         <tr>
           <th>Number of virtual CPUs in use</th>
-          <td>{{ '{:,}'.format(metrics.cpu_used) }}</td>
+          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round|int) }}</td>
         </tr>
         <tr>
           <th>Kubernetes version</th>
-          <td>{{ version.git_version }}</td>
+          <td class="text-right">{{ version.git_version }}</td>
         </tr>
       </table>
     </div>
