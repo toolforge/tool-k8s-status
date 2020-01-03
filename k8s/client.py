@@ -247,7 +247,7 @@ def get_node_metrics(cached=True):
         data = {
             "items": custom.list_cluster_custom_object(
                 "metrics.k8s.io", "v1beta1", "nodes"
-            ).items,
+            )["items"],
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
@@ -263,7 +263,7 @@ def get_pod_metrics(cached=True):
         data = {
             "items": custom.list_cluster_custom_object(
                 "metrics.k8s.io", "v1beta1", "pods"
-            ).items,
+            )["items"],
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
@@ -283,13 +283,13 @@ def get_summary_metrics(cached=True):
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         for node in get_node_metrics(cached)["items"]:
-            if "-control-" in node.metadata.name:
+            if "-control-" in node["metadata"]["name"]:
                 data["control_nodes"] += 1
-            elif "-worker-" in node.metadata.nam:
+            elif "-worker-" in node["metadata"]["name"]:
                 data["worker_nodes"] += 1
             # Convert Ki to Mi
-            data["mem_used_mb"] += int(node.usage.memory[:-2]) * 2 ** -10
+            data["mem_used_mb"] += int(node["usage"]["memory"][:-2]) * 2 ** -10
             # Convert nano to whole
-            data["cpu_used"] += int(node.usage.cpu[:-1]) * 10 ** -9
+            data["cpu_used"] += int(node["usage"]["cpu"][:-1]) * 10 ** -9
         cache().set(key, data, timeout=300)
     return data
