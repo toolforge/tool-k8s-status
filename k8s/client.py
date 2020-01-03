@@ -239,13 +239,15 @@ def get_images(cached=True):
 
 
 def get_node_metrics(cached=True):
+    """Get information about active CPU and memory usage per node."""
     key = "metrics:nodes"
     data = cache().get(key) if cached else None
     if not data:
         custom = custom_client()
         data = {
             "items": custom.list_cluster_custom_object(
-                "metrics.k8s.io", "v1beta1", "nodes").items,
+                "metrics.k8s.io", "v1beta1", "nodes"
+            ).items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
@@ -253,13 +255,15 @@ def get_node_metrics(cached=True):
 
 
 def get_pod_metrics(cached=True):
+    """Get information about active CPU and memory usage per pod."""
     key = "metrics:pods"
     data = cache().get(key) if cached else None
     if not data:
         custom = custom_client()
         data = {
             "items": custom.list_cluster_custom_object(
-                "metrics.k8s.io", "v1beta1", "pods").items,
+                "metrics.k8s.io", "v1beta1", "pods"
+            ).items,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
         cache().set(key, data, timeout=300)
@@ -267,6 +271,7 @@ def get_pod_metrics(cached=True):
 
 
 def get_summary_metrics(cached=True):
+    """Get a set of summary metrics about the cluster."""
     key = "metrics:summary"
     data = cache().get(key) if cached else None
     if not data:
@@ -277,14 +282,14 @@ def get_summary_metrics(cached=True):
             "mem_used_mb": 0,
             "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
-        for node in get_node_metrics(cached):
+        for node in get_node_metrics(cached)["items"]:
             if "-control-" in node.metadata.name:
                 data["control_nodes"] += 1
             elif "-worker-" in node.metadata.nam:
                 data["worker_nodes"] += 1
             # Convert Ki to Mi
-            data["mem_used_mb"] += int(node.usage.memory[:-2]) * 2**-10
+            data["mem_used_mb"] += int(node.usage.memory[:-2]) * 2 ** -10
             # Convert nano to whole
-            data["cpu_used"] += int(node.usage.cpu[:-1]) * 10**-9
+            data["cpu_used"] += int(node.usage.cpu[:-1]) * 10 ** -9
         cache().set(key, data, timeout=300)
     return data
