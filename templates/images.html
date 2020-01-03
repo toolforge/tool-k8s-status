@@ -9,28 +9,30 @@
       <span class="glyphicon glyphicon-picture"></span>
       Images
     </div>
-    <table class="table table-condensed table-hover tablesorter">
-      <thead>
-        <tr>
-          <th>Repository</th>
-          <th>Name</th>
-          <th>Tag</th>
-          <th>Active pods</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for image, pods in images["items"]|dictsort %}
-        {% set repo, name_tag = image.split("/", 1) %}
-        {% set name, tag = name_tag.split(":", 1) %}
-        <tr>
-          <td>{{ repo }}</td>
-          <td><a href="{{ url_for('image', name=image) }}">{{ name }}</a></td>
-          <td>{{ tag }}</td>
-          <td class="text-right">{{ pods|length }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-condensed table-hover tablesorter">
+        <thead>
+          <tr>
+            <th>Repository</th>
+            <th>Name</th>
+            <th>Tag</th>
+            <th>Active pods</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image, pods in images["items"]|dictsort %}
+          {% set repo, name_tag = image.split("/", 1) %}
+          {% set name, tag = name_tag.split(":", 1) %}
+          <tr>
+            <td>{{ repo }}</td>
+            <td><a href="{{ url_for('image', name=image) }}">{{ name }}</a></td>
+            <td>{{ tag }}</td>
+            <td class="text-right">{{ pods|length }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock content %}
