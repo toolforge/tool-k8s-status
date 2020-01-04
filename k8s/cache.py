@@ -47,10 +47,10 @@ def cached(key, expiry=3600):
         def wrapper(*args, **kwargs):
             cache_key = "{}:{}{}".format(
                 key,
-                ";".join(args),
+                ";".join(str(arg) for arg in args),
                 ";".join(
                     "{}={}".format(k, v)
-                    for k, v in kwargs.items()
+                    for k, v in sorted(kwargs.items())
                     if k != "cached"
                 ),
             )

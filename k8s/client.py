@@ -224,7 +224,7 @@ def get_summary_metrics(cached=True):
         "mem_used_mb": 0,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
-    for node in get_node_metrics(cached)["items"]:
+    for node in get_node_metrics(cached=cached)["items"]:
         if "-control-" in node["metadata"]["name"]:
             data["control_nodes"] += 1
         elif "-worker-" in node["metadata"]["name"]:
