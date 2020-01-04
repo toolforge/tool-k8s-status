@@ -37,3 +37,30 @@ def cache():
             )
         ).hexdigest(),
     )
+
+
+def cached(key, expiry=3600):
+    """Cache decorated function return value."""
+
+    def real_cached(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            cache_key = "{}:{}{}".format(
+                key,
+                ";".join(args),
+                ";".join(
+                    "{}={}".format(k, v)
+                    for k, v in kwargs.items()
+                    if k != "cached"
+                ),
+            )
+            cached = kwargs.get("cached", True)
+            r = cache().get(cache_key) if cached else None
+            if r is None:
+                r = f(*args, **kwargs)
+                cache().set(key, r, timeout=expiry)
+            return r
+
+        return wrapper
+
+    return real_cached
