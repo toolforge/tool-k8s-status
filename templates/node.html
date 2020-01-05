@@ -33,8 +33,8 @@
         </dd>
         <dt>RAM usage</dt>
         <dd>
-          {{ metrics.usage.memory|parse_quantity|filesizeformat }} of
-          {{ node.status.allocatable.memory|parse_quantity|filesizeformat }}
+          {{ metrics.usage.memory|parse_quantity|filesizeformat(binary=True) }} of
+          {{ node.status.allocatable.memory|parse_quantity|filesizeformat(binary=True) }}
         </dd>
         <dt>Pod usage</dt>
         <dd>
