@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Web UI for exploring a Toolfroge Kubernetes cluster."""
+import collections
 import datetime
 import logging
 import os
@@ -73,6 +74,10 @@ def nodes():
     ctx = {}
     try:
         cached = "purge" not in flask.request.args
+        pods = collections.defaultdict(int)
+        for pod in k8s.client.get_all_pods(cached=cached)["items"]:
+            pods[pod.spec.node_name] += 1
+
         ctx.update(
             {
                 "nodes": k8s.client.get_nodes(cached=cached),
@@ -82,6 +87,7 @@ def nodes():
                         "items"
                     ]
                 },
+                "pods": pods,
             }
         )
     except Exception:
@@ -99,6 +105,11 @@ def node(name):
             {
                 "node": k8s.client.get_node(name, cached=cached)["node"],
                 "metrics": k8s.client.get_node_metrics(name, cached=cached),
+                "pods": [
+                    pod
+                    for pod in k8s.client.get_all_pods(cached=cached)["items"]
+                    if pod.spec.node_name == name
+                ],
             }
         )
     except Exception:
