@@ -16,8 +16,8 @@
             <th>Name</th>
             <th>Ready</th>
             <th>Roles</th>
-            <th>Age</th>
             <th>Version</th>
+            <th>Age</th>
           </tr>
         </thead>
         <tbody>
@@ -26,8 +26,8 @@
             <td><a href="{{ url_for('node', name=node.metadata.name) }}">{{ node.metadata.name }}</a></td>
             <td>{{ node.status.conditions|selectattr('type', 'equalto', 'Ready')|first|attr('status') }}</td>
             <td>{% if "node-role.kubernetes.io/master" in node.metadata.labels  %}master{% endif %}</td>
-            <td class="text-right">{{ node.metadata.creation_timestamp|summarize }}</td>
             <td>{{ node.status.node_info.kubelet_version }}</td>
+            <td class="text-right">{{ node.metadata.creation_timestamp|summarize }}</td>
           </tr>
           {% endfor %}
         </tbody>
