@@ -213,7 +213,7 @@ def get_node_metrics(name, cached=True):
     """Get information about active CPU and memory usage for a node."""
     custom = custom_client()
     return {
-        "items": custom.get_cluster_custom_object(
+        "metrics": custom.get_cluster_custom_object(
             "metrics.k8s.io", "v1beta1", "nodes", name
         ),
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),

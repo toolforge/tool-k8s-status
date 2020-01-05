@@ -104,7 +104,9 @@ def node(name):
         ctx.update(
             {
                 "node": k8s.client.get_node(name, cached=cached)["node"],
-                "metrics": k8s.client.get_node_metrics(name, cached=cached),
+                "metrics": k8s.client.get_node_metrics(name, cached=cached)[
+                    "metrics"
+                ],
                 "pods": [
                     pod
                     for pod in k8s.client.get_all_pods(cached=cached)["items"]
