@@ -22,6 +22,7 @@ import datetime
 import functools
 
 import kubernetes
+from kubernetes.utils.quantity import parse_quantity
 
 from .cache import cached
 
@@ -214,23 +215,42 @@ def get_pod_metrics(cached=True):
     }
 
 
+@cached("nodes", 300)
+def get_nodes(cached=True):
+    """Get a list of all nodes in the cluster."""
+    v1 = corev1_client()
+    return {
+        "items": v1.list_node().items,
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
 @cached("metrics:summary", 300)
 def get_summary_metrics(cached=True):
     """Get a set of summary metrics about the cluster."""
     data = {
         "control_nodes": 0,
         "worker_nodes": 0,
+        "cpu_total": 0,
         "cpu_used": 0,
-        "mem_used_mb": 0,
+        "mem_total_bytes": 0,
+        "mem_used_bytes": 0,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
-    for node in get_node_metrics(cached=cached)["items"]:
-        if "-control-" in node["metadata"]["name"]:
+    for node in get_nodes(cached=cached)["items"]:
+        if "-control-" in node.metadata.name:
             data["control_nodes"] += 1
-        elif "-worker-" in node["metadata"]["name"]:
+        elif "-worker-" in node.metadata.name:
             data["worker_nodes"] += 1
-        # Convert Ki to Mi
-        data["mem_used_mb"] += int(node["usage"]["memory"][:-2]) * 2 ** -10
-        # Convert nano to whole
-        data["cpu_used"] += int(node["usage"]["cpu"][:-1]) * 10 ** -9
+            # Only count workers in system capacity numbers
+            data["mem_total_bytes"] += parse_quantity(
+                node.status.allocatable["memory"]
+            )
+            data["cpu_total"] += parse_quantity(node.status.allocatable["cpu"])
+
+    for node in get_node_metrics(cached=cached)["items"]:
+        if "-worker-" in node.metadata.name:
+            data["mem_used_bytes"] += parse_quantity(node["usage"]["memory"])
+            data["cpu_used"] += parse_quantity(node["usage"]["cpu"])
+
     return data

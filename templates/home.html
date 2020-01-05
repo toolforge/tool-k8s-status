@@ -26,12 +26,12 @@
           <td class="text-right">{{ '{:,}'.format(metrics.worker_nodes) }}</td>
         </tr>
         <tr>
-          <th>Amount of RAM in use (in MBs)</th>
-          <td class="text-right">{{ '{:,}'.format(metrics.mem_used_mb|round|int) }}</td>
+          <th>RAM usage</th>
+          <td class="text-right">{{ metrics.mem_used_bytes|round|int|filesizeformat(True) }} used of {{ metrics.mem_total_bytes|round|int|filesizeformat(True) }}</td>
         </tr>
         <tr>
-          <th>Number of virtual CPUs in use</th>
-          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round|int) }}</td>
+          <th>CPU usage</th>
+          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round|int) }} used of {{ '{:,}'.format(metrics.cpu_total|round|int) }}</td>
         </tr>
         <tr>
           <th>Kubernetes version</th>
