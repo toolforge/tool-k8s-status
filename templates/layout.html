@@ -32,6 +32,9 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li class="{% if request.url_rule.endpoint == 'home' %}active{% endif %}"><a href="{{ url_for('home') }}"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+            {% with nodes = url_for('nodes') %}
+            <li class="{% if request.base_url|contains(nodes) %}active{% endif %}"><a href="{{ nodes }}"><span class="glyphicon glyphicon-hdd"></span> Nodes</a></li>
+            {% endwith %}
             {% with namespaces = url_for('namespaces') %}
             <li class="{% if request.base_url|contains(namespaces) %}active{% endif %}"><a href="{{ namespaces }}"><span class="glyphicon glyphicon-folder-open"></span> Namespaces</a></li>
             {% endwith %}

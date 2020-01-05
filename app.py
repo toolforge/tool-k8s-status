@@ -67,6 +67,30 @@ def home():
     return flask.render_template("home.html", **ctx)
 
 
+@app.route("/nodes/")
+def nodes():
+    """List nodes."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update({"nodes": k8s.client.get_nodes(cached=cached)})
+    except Exception:
+        app.logger.exception("Error collecting nodes")
+    return flask.render_template("nodes.html", **ctx)
+
+
+@app.route("/nodes/<name>/")
+def node(name):
+    """Describe a node."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update({"node": k8s.client.get_node(name, cached=cached)["node"]})
+    except Exception:
+        app.logger.exception("Error collecting node")
+    return flask.render_template("node.html", **ctx)
+
+
 @app.route("/namespaces/")
 def namespaces():
     """List namespaces."""

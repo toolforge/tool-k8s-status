@@ -225,6 +225,16 @@ def get_nodes(cached=True):
     }
 
 
+@cached("node", 300)
+def get_node(name, cached=True):
+    """Get a list of all nodes in the cluster."""
+    v1 = corev1_client()
+    return {
+        "node": v1.read_node(name),
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
 @cached("metrics:summary", 300)
 def get_summary_metrics(cached=True):
     """Get a set of summary metrics about the cluster."""

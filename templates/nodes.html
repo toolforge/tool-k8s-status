@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="panel-group" role="tablist">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-hdd"></span>
+        Nodes
+      </h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-condensed table-hover tablesorter">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Ready</th>
+            <th>Roles</th>
+            <th>Age</th>
+            <th>Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for node in nodes["items"] %}
+          <tr>
+            <td><a href="{{ url_for('node', name=node.metadata.name) }}">{{ node.metadata.name }}</a></td>
+            <td>{{ node.status.conditions|selectattr('type', 'equalto', 'Ready')|first|attr('status') }}</td>
+            <td>{% if "node-role.kubernetes.io/master" in node.metadata.labels  %}master{% endif %}</td>
+            <td class="text-right">{{ node.metadata.creationTimestamp|summarize }}</td>
+            <td>{{ node.status.nodeInfo.kubeletVersion }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block css %}
+<link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery.tablesorter/2.28.5/css/theme.default.min.css" crossorigin="anonymous">
+{% endblock css %}
+
+{% block js %}
+{{ super() }}
+<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery.tablesorter/2.28.5/js/jquery.tablesorter.min.js" crossorigin="anonymous"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  $(".tablesorter").tablesorter();
+});
+</script>
+{% endblock js %}
+{# vim:sw=2:ts=2:sts=2:et: #}
