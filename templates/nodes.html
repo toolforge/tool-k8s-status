@@ -16,16 +16,21 @@
             <th>Name</th>
             <th>Ready</th>
             <th>Roles</th>
+            <th>Load</th>
+            <th>Memory</th>
             <th>Version</th>
             <th>Age</th>
           </tr>
         </thead>
         <tbody>
           {% for node in nodes["items"] %}
+          {% set m = metrics[node.metadata.name] %}
           <tr>
             <td><a href="{{ url_for('node', name=node.metadata.name) }}">{{ node.metadata.name }}</a></td>
             <td>{{ node.status.conditions|selectattr('type', 'equalto', 'Ready')|first|attr('status') }}</td>
             <td>{% if "node-role.kubernetes.io/master" in node.metadata.labels  %}control{% else %}worker{% endif %}</td>
+            <td>{{ "{:.0%}".format(m.usage.cpu|parse_quantity / node.status.allocatable.cpu|parse_quantity) }}</td>
+            <td>{{ "{:.0%}".format(m.usage.memory|parse_quantity / node.status.allocatable.memory|parse_quantity) }}</td>
             <td>{{ node.status.node_info.kubelet_version }}</td>
             <td class="text-right">{{ node.metadata.creation_timestamp|summarize }}</td>
           </tr>

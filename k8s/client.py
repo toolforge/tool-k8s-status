@@ -22,12 +22,17 @@ import datetime
 import functools
 
 import kubernetes
-from kubernetes.utils.quantity import parse_quantity
+import kubernetes.utils.quantity
 
 from .cache import cached
 
 
 kubernetes.config.load_incluster_config()
+
+
+def parse_quantity(val):
+    """Parse kubernetes quantity like 200Mi to a decimal number."""
+    return kubernetes.utils.quantity.parse_quantity(val)
 
 
 @functools.lru_cache()
@@ -192,7 +197,7 @@ def get_images(cached=True):
 
 
 @cached("metrics:nodes", 300)
-def get_node_metrics(cached=True):
+def get_nodes_metrics(cached=True):
     """Get information about active CPU and memory usage per node."""
     custom = custom_client()
     return {
@@ -203,8 +208,20 @@ def get_node_metrics(cached=True):
     }
 
 
+@cached("metrics:node", 300)
+def get_node_metrics(name, cached=True):
+    """Get information about active CPU and memory usage for a node."""
+    custom = custom_client()
+    return {
+        "items": custom.get_cluster_custom_object(
+            "metrics.k8s.io", "v1beta1", "nodes", name
+        ),
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
 @cached("metrics:pods", 300)
-def get_pod_metrics(cached=True):
+def get_pods_metrics(cached=True):
     """Get information about active CPU and memory usage per pod."""
     custom = custom_client()
     return {
@@ -258,7 +275,7 @@ def get_summary_metrics(cached=True):
             )
             data["cpu_total"] += parse_quantity(node.status.allocatable["cpu"])
 
-    for node in get_node_metrics(cached=cached)["items"]:
+    for node in get_nodes_metrics(cached=cached)["items"]:
         if "-worker-" in node["metadata"]["name"]:
             data["mem_used_bytes"] += parse_quantity(node["usage"]["memory"])
             data["cpu_used"] += parse_quantity(node["usage"]["cpu"])

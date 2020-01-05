@@ -73,7 +73,17 @@ def nodes():
     ctx = {}
     try:
         cached = "purge" not in flask.request.args
-        ctx.update({"nodes": k8s.client.get_nodes(cached=cached)})
+        ctx.update(
+            {
+                "nodes": k8s.client.get_nodes(cached=cached),
+                "metrics": {
+                    m.metadata.name: m
+                    for m in k8s.client.get_nodes_metrics(cached=cached)[
+                        "items"
+                    ]
+                },
+            }
+        )
     except Exception:
         app.logger.exception("Error collecting nodes")
     return flask.render_template("nodes.html", **ctx)
@@ -85,7 +95,12 @@ def node(name):
     ctx = {}
     try:
         cached = "purge" not in flask.request.args
-        ctx.update({"node": k8s.client.get_node(name, cached=cached)["node"]})
+        ctx.update(
+            {
+                "node": k8s.client.get_node(name, cached=cached)["node"],
+                "metrics": k8s.client.get_node_metrics(name, cached=cached),
+            }
+        )
     except Exception:
         app.logger.exception("Error collecting node")
     return flask.render_template("node.html", **ctx)
@@ -225,3 +240,9 @@ def summarize(ts):
 def pprint_yaml(obj):
     """Dump an object as YAML."""
     return yaml.dump(obj, explicit_start=True, width=79, indent=2)
+
+
+@app.template_filter("parse_quantity")
+def parse_quantity(obj):
+    """Parse kubernetes quantity like 200Mi to a decimal number."""
+    return k8s.client.parse_quantity(obj)
