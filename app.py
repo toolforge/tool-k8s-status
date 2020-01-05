@@ -77,7 +77,7 @@ def nodes():
             {
                 "nodes": k8s.client.get_nodes(cached=cached),
                 "metrics": {
-                    m.metadata.name: m
+                    m["metadata"]["name"]: m
                     for m in k8s.client.get_nodes_metrics(cached=cached)[
                         "items"
                     ]
