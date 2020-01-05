@@ -30,7 +30,7 @@
         <dt>Restarts</dt>
         <dd>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</dd>
         <dt>Node</dt>
-        <dd>{{ pod.spec.node_name }}</dd>
+        <dd><a href="{{ url_for('node', name=pod.spec.node.name) }}">{{ pod.spec.node_name }}</a></dd>
         <dt>Age</dt>
         <dd>{{ pod.status.start_time|summarize }} ({{ pod.status.start_time.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
         <dt>Labels</dt>
