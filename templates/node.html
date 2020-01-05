@@ -83,7 +83,7 @@
     </div>
     <div class="panel-body">
       <ul class="list-unstyled">
-        {% for msg in node.status.conditions %}
+        {% for msg in node.status.conditions|sort(attribute="last_transition_time", reverse=True) %}
         <li>
           {{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}
           <strong>{{ msg.type }}</strong>
