@@ -249,7 +249,7 @@ def get_summary_metrics(cached=True):
             data["cpu_total"] += parse_quantity(node.status.allocatable["cpu"])
 
     for node in get_node_metrics(cached=cached)["items"]:
-        if "-worker-" in node.metadata.name:
+        if "-worker-" in node["metadata"]["name"]:
             data["mem_used_bytes"] += parse_quantity(node["usage"]["memory"])
             data["cpu_used"] += parse_quantity(node["usage"]["cpu"])
 
