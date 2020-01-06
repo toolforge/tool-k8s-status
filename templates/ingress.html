@@ -79,30 +79,20 @@
       </table>
     </div>
   </div>
-
-  <div class="panel panel-default">
-    <div class="panel-heading" role="tab">
-      <h3 class="panel-title">
-        <span class="glyphicon glyphicon-file"></span>
-        Last applied configuration
-      </h3>
-    </div>
-    <div class="panel-body">
-      <pre><code class="language-yaml">{{ last_applied|yaml }}</code></pre>
-    </div>
-  </div>
 </div>
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/highlight.js/9.15.10/styles/solarized-light.min.css" integrity="sha256-WYJU0xxU/YMhVBfwHlz/hFemLIHoVsfIClbaksqOWvk=" crossorigin="anonymous" />
-{% endblock %}
+<link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery.tablesorter/2.28.5/css/theme.default.min.css" crossorigin="anonymous">
+{% endblock css %}
 
 {% block js %}
 {{ super() }}
-<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery.tablesorter/2.28.5/js/jquery.tablesorter.min.js" crossorigin="anonymous"></script>
 <script type="text/javascript">
-  hljs.initHighlightingOnLoad();
+  $(document).ready(function() {
+    $(".tablesorter").tablesorter();
+  });
 </script>
-{% endblock %}
+{% endblock js %}
 {# vim:sw=2:ts=2:sts=2:et: #}

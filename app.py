@@ -20,7 +20,6 @@
 """Web UI for exploring a Toolfroge Kubernetes cluster."""
 import collections
 import datetime
-import json
 import logging
 import os
 
@@ -202,17 +201,11 @@ def ingress(namespace, name):
     }
     try:
         cached = "purge" not in flask.request.args
-        ingress = k8s.client.get_ingress(namespace, name, cached=cached)[
-            "ingress"
-        ]
         ctx.update(
             {
-                "ingress": ingress,
-                "last_applied": json.loads(
-                    ingress.metadata.annotations[
-                        "kubectl.kubernetes.io/last-applied-configuration"
-                    ]
-                ),
+                "ingress": k8s.client.get_ingress(
+                    namespace, name, cached=cached
+                )["ingress"],
             }
         )
     except Exception:
