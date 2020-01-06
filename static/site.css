@@ -51,3 +51,7 @@ dd ul, dd ol {
 .ns-active {
   font-weight: bold;
 }
+
+.align-top {
+  vertical-align: top;
+}

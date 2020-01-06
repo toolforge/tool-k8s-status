@@ -20,6 +20,7 @@
 """Web UI for exploring a Toolfroge Kubernetes cluster."""
 import collections
 import datetime
+import json
 import logging
 import os
 
@@ -190,6 +191,36 @@ def pod(namespace, pod):
         return flask.render_template(tpl, **ctx)
     else:
         flask.flash("Pod {} not found.".format(pod), "danger")
+        return flask.redirect(flask.url_for("namespace", namespace=namespace))
+
+
+@app.route("/namespaces/<namespace>/ingresses/<name>/")
+def ingress(namespace, name):
+    """Get details for a given ingress."""
+    ctx = {
+        "namespace": namespace,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ingress = k8s.client.get_ingress(namespace, name, cached=cached)[
+            "ingress"
+        ]
+        ctx.update(
+            {
+                "ingress": ingress,
+                "last_applied": json.loads(
+                    ingress.metadata.annotations[
+                        "kubectl.kubernetes.io/last-applied-configuration"
+                    ]
+                ),
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting namespace %s", namespace)
+    if "ingress" in ctx and ctx["ingress"]:
+        return flask.render_template("ingress.html", **ctx)
+    else:
+        flask.flash("Ingress {} not found.".format(name), "danger")
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
 
 

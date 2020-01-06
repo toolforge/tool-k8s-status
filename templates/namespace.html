@@ -114,7 +114,7 @@
         <tbody>
           {% for ingress in ingresses["items"] %}
           <tr>
-            <td>{{ ingress.metadata.name }}</td>
+            <td><a href="{{ url_for('ingress', namespace=ingress.metadata.namespace, name=ingress.metadata.name) }}">{{ ingress.metadata.name }}</a></td>
             <td>
               {{ ingress.spec.rules|map(attribute="host")|join(', ') }}
             </td>

@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Ingress {{ namespace }}.{{ ingress.metadata.name }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="{{ url_for('namespaces') }}" rel="nofollow">Namespaces</a></li>
+  <li><a href="{{ url_for('namespace', namespace=namespace) }}" rel="nofollow">{{ namespace }}</a></li>
+  <li>Ingresses</li>
+  <li class="active">{{ ingress.metadata.name }}</li>
+</ol>
+<div class="page-header">
+  <h1>Ingress: {{ ingress.metadata.name|capitalize }}</a></h1>
+</div>
+
+<div class="panel-group" role="tablist">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-equalizer"></span>
+        Status
+      </h3>
+    </div>
+    <div class="panel-body">
+      <dl class="dl-indent">
+        <dt>Age</dt>
+        <dd>{{ ingress.metadata.creation_timestamp|summarize }} ({{ ingress.metadata.creation_timestamp.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
+        <dt>Labels</dt>
+        <dd>
+          {% if ingress.metadata.labels %}
+          {% for key, value in ingress.metadata.labels|dictsort %}
+          <span class="label label-outline label-info">{{ key }}={{ value }}</span>
+          {% endfor %}
+          {% endif %}
+        </dd>
+        <dt>Annotations</dt>
+        <dd>
+          {% if ingress.metadata.annotations %}
+          {% for key, value in ingress.metadata.annotations|dictsort %}
+          {% if key != "kubectl.kubernetes.io/last-applied-configuration" %}
+          <span class="label label-outline label-default">{{ key }}: {{ value }}</span>
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+        </dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-th-list"></span>
+        Rules
+      </h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-condensed table-hover tablesorter">
+        <thead>
+          <tr>
+            <th>Host</th>
+            <th>Path</th>
+            <th>Backend</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rule in ingress.spec.rules %}
+          {% for path in rule.http.paths %}
+          <tr>
+            {% if loop.changed(rule.host) %}
+            <td rowspan="{{ rule.http.paths|length }}" class="align-top">{{ rule.host }}</td>
+            {% endif %}
+            <td><tt>{{ path.path }}</tt></td>
+            <td>{{ path.backend.service_name }}:{{ path.backend.service_port }}</td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-file"></span>
+        Last applied configuration
+      </h3>
+    </div>
+    <div class="panel-body">
+      <pre><code class="language-yaml">{{ last_applied|yaml }}</code></pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/highlight.js/9.15.10/styles/solarized-light.min.css" integrity="sha256-WYJU0xxU/YMhVBfwHlz/hFemLIHoVsfIClbaksqOWvk=" crossorigin="anonymous" />
+{% endblock %}
+
+{% block js %}
+{{ super() }}
+<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  hljs.initHighlightingOnLoad();
+</script>
+{% endblock %}
+{# vim:sw=2:ts=2:sts=2:et: #}

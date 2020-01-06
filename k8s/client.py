@@ -94,12 +94,22 @@ def get_services(namespace, cached=True):
     }
 
 
-@cached("ingresses", 300)
+@cached("ingresses:__all__", 300)
 def get_ingresses(namespace, cached=True):
     """Get a list of all ingresses in a namespace."""
     v1 = extV1b1_client()
     return {
         "items": v1.list_namespaced_ingress(namespace=namespace).items,
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+@cached("ingresses", 300)
+def get_ingress(namespace, name, cached=True):
+    """Get a list of all ingresses in a namespace."""
+    v1 = extV1b1_client()
+    return {
+        "ingress": v1.read_namespaced_ingress(name, namespace),
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
