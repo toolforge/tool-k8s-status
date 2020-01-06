@@ -113,7 +113,6 @@
             <th>Ready</th>
             <th>Status</th>
             <th>Restarts</th>
-            <th>Node</th>
             <th>Age</th>
           </tr>
         </thead>
@@ -129,7 +128,6 @@
             <td class="text-center">{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</td>
             <td>{{ pod.status.phase }}</td>
             <td class="text-right">{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
-            <td>{{ pod.spec.node_name }}</td>
             <td class="text-right">{{ pod.status.start_time|summarize }}</td>
           </tr>
           {% endfor %}

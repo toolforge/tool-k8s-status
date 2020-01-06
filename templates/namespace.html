@@ -45,7 +45,7 @@
             <td class="text-center">{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</td>
             <td>{{ pod.status.phase }}</td>
             <td class="text-right">{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
-            <td>{{ pod.spec.node_name }}</td>
+            <td><a href="{{ url_for('node', name=pod.spec.node_name) }}">{{ pod.spec.node_name }}</a></td>
             <td class="text-right">{{ pod.status.start_time|summarize }}</td>
           </tr>
           {% endfor %}
