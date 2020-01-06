@@ -277,10 +277,9 @@
         {% for msg in pod.status.conditions|sort(attribute="last_transition_time", reverse=True) %}
         <li>
           {{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}
-          <strong>{{ msg.type }}</strong>
-          {{ msg.status }}
+          <strong>{{ msg.type }}={{ msg.status }}</strong>
           {{ msg.message if msg.message }}
-          {{ msg.reason if msg.reason }}
+          <em>{{ msg.reason if msg.reason }}</em>
         </li>
         {% endfor %}
       </ul>

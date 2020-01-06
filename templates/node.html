@@ -58,17 +58,17 @@
           {% endfor %}
           {% endif %}
         </dd>
+        {% if node.spec.taints %}
         <dt>Taints</dt>
         <dd>
-          {% if node.spec.taints %}
           {% for taint in node.spec.taints %}
           <span class="label label-outline label-default">{{ taint.key }}: {{ taint.value|default("", True) }} ({{ taint.effect }})</span>
           {% endfor %}
-          {% endif %}
         </dd>
+        {% endif %}
         <dt>IP</dt>
         {% for addr in node.status.addresses %}
-        <dd>{{ addr.address }} ({{ addr.type }})</dd>
+        <dd>{{ addr.type }}: {{ addr.address }}</dd>
         {% endfor %}
       </dl>
     </div>
@@ -86,10 +86,9 @@
         {% for msg in node.status.conditions|sort(attribute="last_transition_time", reverse=True) %}
         <li>
           {{ msg.last_transition_time.strftime('%Y-%m-%d %H:%M:%S %Z') }}
-          <strong>{{ msg.type }}</strong>
-          {{ msg.status }}
+          <strong>{{ msg.type }}={{ msg.status }}</strong>
           {{ msg.message if msg.message }}
-          {{ msg.reason if msg.reason }}
+          <em>{{ msg.reason if msg.reason }}</em>
         </li>
         {% endfor %}
       </ul>
