@@ -31,7 +31,7 @@
         </tr>
         <tr>
           <th>CPU usage</th>
-          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round|int) }} of {{ '{:,}'.format(metrics.cpu_total|round|int) }}</td>
+          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round(2)) }} of {{ '{:,}'.format(metrics.cpu_total|round|int) }}</td>
         </tr>
         <tr>
           <th>Kubernetes version</th>
