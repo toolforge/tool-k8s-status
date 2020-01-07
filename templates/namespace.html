@@ -159,9 +159,11 @@
             <td>{{ daemonset.status.updated_number_scheduled }}</td>
             <td>{{ daemonset.status.number_available }}</td>
             <td>
+              {% if daemonset.spec.template.spec.node_selector %}
               {% for key, value in daemonset.spec.template.spec.node_selector|dictsort %}
               <span class="label label-outline label-default">{{ key }}={{ value }}</span>
               {% endfor %}
+              {% endif %}
             </td>
             <td class="text-right">{{ daemonset.metadata.creation_timestamp|summarize }}</td>
           </tr>
