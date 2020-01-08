@@ -24,6 +24,8 @@ import logging
 import os
 
 import flask
+import jinja2
+import natsort
 import werkzeug.contrib.fixers
 import yaml
 
@@ -283,3 +285,10 @@ def pprint_yaml(obj):
 def parse_quantity(obj):
     """Parse kubernetes quantity like 200Mi to a decimal number."""
     return k8s.client.parse_quantity(obj)
+
+
+@app.template_filter("natsort")
+def filter_natsort(itr, reverse=False, attribute=None):
+    """Sort an iterator by "natural" order."""
+    key_func = jinja2.filters.make_multi_attrgetter(attribute)
+    return natsort.natsorted(itr, key=key_func, reverse=reverse)

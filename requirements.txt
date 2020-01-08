@@ -2,5 +2,6 @@ cachelib
 flask
 kubernetes
 ldap3
+natsort
 PyYAML
 redis
