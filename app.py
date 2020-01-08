@@ -288,7 +288,8 @@ def parse_quantity(obj):
 
 
 @app.template_filter("natsort")
-def filter_natsort(itr, reverse=False, attribute=None):
+@jinja2.filters.environmentfilter
+def filter_natsort(env, itr, reverse=False, attribute=None):
     """Sort an iterator by "natural" order."""
-    key_func = jinja2.filters.make_attrgetter(attribute)
+    key_func = jinja2.filters.make_attrgetter(env, attribute)
     return natsort.natsorted(itr, key=key_func, reverse=reverse)
