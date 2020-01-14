@@ -94,7 +94,7 @@ def get_services(namespace, cached=True):
     }
 
 
-@cached("ingresses:__all__", 300)
+@cached("ingresses", 300)
 def get_ingresses(namespace, cached=True):
     """Get a list of all ingresses in a namespace."""
     v1 = extV1b1_client()
@@ -112,6 +112,24 @@ def get_ingress(namespace, name, cached=True):
         "ingress": v1.read_namespaced_ingress(name, namespace),
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
+
+
+@cached("ingresses:__by_ns__", 300)
+def get_ingresses_by_namespace(cached=True):
+    """Get a list of all ingress objects grouped by namespace."""
+    data = {
+        "namespaces": collections.defaultdict(list),
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "active_namespaces": 0,
+        "total_ingresses": 0,
+    }
+    v1 = extV1b1_client()
+    for ingress in v1.list_ingress_for_all_namespaces().items:
+        ns = ingress.metadata.namespace
+        data["namespaces"][ns].append(ingress)
+        data["total_ingresses"] += 1
+    data["active_namespaces"] = len(data["namespaces"].keys())
+    return data
 
 
 @cached("daemonsets", 300)

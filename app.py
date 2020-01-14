@@ -127,12 +127,22 @@ def namespaces():
     ctx = {}
     try:
         cached = "purge" not in flask.request.args
+        active = set(
+            k8s.client.get_pods_by_namespace(cached=cached)[
+                "namespaces"
+            ].keys()
+        )
+        # Some namespaces are "active" by including only an Ingress that
+        # redirects to some other URL space
+        active.update(
+            k8s.client.get_ingresses_by_namespace(cached=cached)[
+                "namespaces"
+            ].keys()
+        )
         ctx.update(
             {
                 "namespaces": k8s.client.get_namespaces(cached=cached),
-                "active": k8s.client.get_pods_by_namespace(cached=cached)[
-                    "namespaces"
-                ].keys(),
+                "active": list(active),
             }
         )
     except Exception:
