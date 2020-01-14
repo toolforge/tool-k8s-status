@@ -280,6 +280,21 @@ def get_node(name, cached=True):
     }
 
 
+@cached("metrics:namespaces", 300)
+def get_active_namespaces(cached=True):
+    """Get a list of all namespaces which should be considered 'active'."""
+    active = set(get_pods_by_namespace(cached=cached)["namespaces"].keys())
+    # Some namespaces are "active" by including only an Ingress that
+    # redirects to some other URL space
+    active.update(
+        get_ingresses_by_namespace(cached=cached)["namespaces"].keys()
+    )
+    return {
+        "namespaces": list(active),
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
 @cached("metrics:summary", 300)
 def get_summary_metrics(cached=True):
     """Get a set of summary metrics about the cluster."""

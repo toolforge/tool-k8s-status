@@ -11,7 +11,7 @@
       <table class="table table-condensed">
         <tr>
           <th>Active namespaces</th>
-          <td class="text-right">{{ '{:,}'.format(pods.active_namespaces) }}</td>
+          <td class="text-right">{{ '{:,}'.format(namespaces|length) }}</td>
         </tr>
         <tr>
           <th>Active pods</th>
