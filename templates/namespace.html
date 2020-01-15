@@ -316,7 +316,7 @@
           {% for job in jobs["items"] %}
           <tr>
             <td>{{ job.metadata.name }}</td>
-            <td>{{ job.status.successful }}/{{ job.spec.completions }}</td>
+            <td>{{ job.status.succeeded }}/{{ job.spec.completions }}</td>
             <td class="text-right">{{ job.status.start_time|duration(end=job.status.completion_time) }}</td>
             <td class="text-right">{{ job.metadata.creation_timestamp|duration }}</td>
           </tr>
