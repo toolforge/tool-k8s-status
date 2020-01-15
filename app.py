@@ -170,6 +170,7 @@ def namespace(namespace):
                 "statefulsets": k8s.client.get_statefulsets(
                     namespace, cached=cached
                 ),
+                "jobs": k8s.client.get_jobs(namespace, cached=cached),
             }
         )
     except Exception:

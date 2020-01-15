@@ -305,8 +305,22 @@
     <div class="table-responsive">
       <table class="table table-condensed table-hover tablesorter">
         <thead>
+          <tr>
+            <th>Name</th>
+            <th>Completions</th>
+            <th>Duration</th>
+            <th>Age</th>
+          </tr>
         </thead>
         <tbody>
+          {% for job in jobs["items"] %}
+          <tr>
+            <td>{{ job.metadata.name }}</td>
+            <td>{{ job.status.successful }}/{{ job.spec.completions }}</td>
+            <td class="text-right">{{ job.status.start_time|duration(end=job.status.completion_time) }}</td>
+            <td class="text-right">{{ job.metadata.start_timestamp|duration }}</td>
+          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
