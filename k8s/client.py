@@ -190,11 +190,14 @@ def get_pods_by_namespace(cached=True):
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         "active_namespaces": 0,
         "total_pods": 0,
+        "active_pods": 0,
     }
     for pod in get_all_pods(cached=cached)["items"]:
         ns = pod.metadata.namespace
         data["namespaces"][ns].append(pod)
         data["total_pods"] += 1
+        if pod.status.phase in ["Pending", "Running"]:
+            data["active_pods"] += 1
     data["active_namespaces"] = len(data["namespaces"].keys())
     return data
 
