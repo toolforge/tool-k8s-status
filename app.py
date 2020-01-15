@@ -263,19 +263,33 @@ def contains(haystack, needle):
     return needle in haystack
 
 
-@app.template_filter("summarize")
-def summarize(ts):
-    """Convert a timestamp to a relative time from the current time."""
-    now = datetime.datetime.now(tz=ts.tzinfo)
-    diff_secs = (now - ts).total_seconds()
+@app.template_filter("duration")
+def duration(start, end=None):
+    """Compute a duration relative to the current time or a given time."""
+    if end is None:
+        end = datetime.datetime.now(tz=start.tzinfo)
+    diff_secs = abs((end - start).total_seconds())
+    parts = []
+    if diff_secs > 31556952:
+        parts.append("{}y".format(int(diff_secs // 31556952)))
+        diff_secs = diff_secs % 31556952
+    if diff_secs > 604800:
+        parts.append("{}w".format(int(diff_secs // 604800)))
+        diff_secs = diff_secs % 604800
     if diff_secs > 86400:
-        return "{}d".format(int(diff_secs // 86400))
-    elif diff_secs > 3600:
-        return "{}h".format(int(diff_secs // 3600))
-    elif diff_secs > 60:
-        return "{}m".format(int(diff_secs // 60))
-    else:
-        return "{}s".format(int(diff_secs))
+        parts.append("{}d".format(int(diff_secs // 86400)))
+        diff_secs = diff_secs % 86400
+    if diff_secs > 3600:
+        parts.append("{}h".format(int(diff_secs // 3600)))
+        diff_secs = diff_secs % 3600
+    if diff_secs > 60:
+        parts.append("{}m".format(int(diff_secs // 60)))
+        diff_secs = diff_secs % 60
+    if diff_secs >= 1:
+        parts.append("{}s".format(int(diff_secs)))
+    if not parts:
+        parts.append("{}ms".format(int(diff_secs * 1000)))
+    return "".join(parts)
 
 
 @app.template_filter("yaml")

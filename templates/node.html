@@ -41,7 +41,7 @@
           {{ pods|length }} of
           {{ node.status.allocatable.pods }}
         <dt>Age</dt>
-        <dd>{{ node.metadata.creation_timestamp|summarize }} ({{ node.metadata.creation_timestamp.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
+        <dd>{{ node.metadata.creation_timestamp|duration }} ({{ node.metadata.creation_timestamp.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
         <dt>Labels</dt>
         <dd>
           {% if node.metadata.labels %}
@@ -127,7 +127,7 @@
             <td class="text-center">{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</td>
             <td>{{ pod.status.phase }}</td>
             <td class="text-right">{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
-            <td class="text-right">{{ pod.status.start_time|summarize }}</td>
+            <td class="text-right">{{ pod.status.start_time|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>

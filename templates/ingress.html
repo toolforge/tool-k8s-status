@@ -24,7 +24,7 @@
     <div class="panel-body">
       <dl class="dl-indent">
         <dt>Age</dt>
-        <dd>{{ ingress.metadata.creation_timestamp|summarize }} ({{ ingress.metadata.creation_timestamp.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
+        <dd>{{ ingress.metadata.creation_timestamp|duration }} ({{ ingress.metadata.creation_timestamp.strftime('%Y-%m-%d %H:%M:%S %Z') }})</dd>
         <dt>Labels</dt>
         <dd>
           {% if ingress.metadata.labels %}

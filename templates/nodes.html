@@ -32,7 +32,7 @@
             <td>{{ pods[node.metadata.name] }}</td>
             <td>{{ "{:.0%}".format(m.usage.cpu|parse_quantity / node.status.allocatable.cpu|parse_quantity) }}</td>
             <td>{{ "{:.0%}".format(m.usage.memory|parse_quantity / node.status.allocatable.memory|parse_quantity) }}</td>
-            <td class="text-right">{{ node.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ node.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>

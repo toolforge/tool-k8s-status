@@ -46,7 +46,7 @@
             <td>{{ pod.status.phase }}</td>
             <td class="text-right">{{ pod.status.container_statuses|sum(attribute='restart_count') }}</td>
             <td><a href="{{ url_for('node', name=pod.spec.node_name) }}" class="text-nowrap">{{ pod.spec.node_name }}</a></td>
-            <td class="text-right">{{ pod.status.start_time|summarize }}</td>
+            <td class="text-right">{{ pod.status.start_time|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -87,7 +87,7 @@
               {{ port.port }}{% if port.target_port and port.target_port != port.port %}:{{ port.target_port }}{% endif %}/{{ port.protocol }}
               {% endfor %}
             </td>
-            <td class="text-right">{{ service.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ service.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -118,7 +118,7 @@
             <td>
               {{ ingress.spec.rules|map(attribute="host")|join(', ') }}
             </td>
-            <td class="text-right">{{ ingress.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ ingress.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -165,7 +165,7 @@
               {% endfor %}
               {% endif %}
             </td>
-            <td class="text-right">{{ daemonset.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ daemonset.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -200,7 +200,7 @@
             <td>{{ deployment.status.ready_replicas }}/{{ deployment.status.replicas }}</td>
             <td>{{ deployment.status.updated_replicas }}</td>
             <td>{{ deployment.status.available_replicas }}</td>
-            <td class="text-right">{{ deployment.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ deployment.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -235,7 +235,7 @@
             <td>{{ replicaset.spec.replicas }}</td>
             <td>{{ replicaset.status.replicas }}</td>
             <td>{{ replicaset.status.ready_replicas }}</td>
-            <td class="text-right">{{ replicaset.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ replicaset.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -266,7 +266,7 @@
           <tr>
             <td>{{ statefulset.metadata.name }}</td>
             <td>{{ statefulset.status.ready_replicas }}/{{ statefulset.spec.replicas }}</td>
-            <td class="text-right">{{ statefulset.metadata.creation_timestamp|summarize }}</td>
+            <td class="text-right">{{ statefulset.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
