@@ -318,10 +318,10 @@
           {% for cron in cronjobs["items"] %}
           <tr>
             <td>{{ cron.metadata.name }}</td>
-            <td>{{ cron.spec.schedule }}</td>
+            <td><tt>{{ cron.spec.schedule }}</tt></td>
             <td>{{ cron.spec.suspend }}</td>
-            <td>{% if cron.status.active %}{{ cron.status.active|length }}{% else %}0{% endif %}</td>
-            <td>{{ cron.status.last_schedule_time|duration }}</td>
+            <td class="text-right">{% if cron.status.active %}{{ cron.status.active|length }}{% else %}0{% endif %}</td>
+            <td class="text-right">{{ cron.status.last_schedule_time|duration }}</td>
             <td class="text-right">{{ cron.metadata.creation_timestamp|duration }}</td>
           </tr>
           {% endfor %}
