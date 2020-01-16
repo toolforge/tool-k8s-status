@@ -265,7 +265,7 @@ def contains(haystack, needle):
 
 
 @app.template_filter("duration")
-def duration(start, end=None):
+def duration(start, end=None, max_parts=3):
     """Compute a duration relative to the current time or a given time."""
     if end is None:
         end = datetime.datetime.now(tz=start.tzinfo)
@@ -290,6 +290,7 @@ def duration(start, end=None):
         parts.append("{}s".format(int(diff_secs)))
     if not parts:
         parts.append("{}ms".format(int(diff_secs * 1000)))
+    parts = parts[:max_parts]
     return "".join(parts)
 
 
