@@ -320,7 +320,7 @@
             <td>{{ cron.metadata.name }}</td>
             <td>{{ cron.spec.schedule }}</td>
             <td>{{ cron.spec.suspend }}</td>
-            <td>{{ cron.status.active|length }}</td>
+            <td>{% if cron.status.active %}{{ cron.status.active|length }}{% else %}0{% endif %}</td>
             <td>{{ cron.status.last_schedule_time|duration }}</td>
             <td class="text-right">{{ cron.metadata.creation_timestamp|duration }}</td>
           </tr>
