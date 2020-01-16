@@ -294,6 +294,43 @@
   </div>
   {% endif %}
 
+  {% if cronjobs and cronjobs["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-time"></span>
+        CronJobs
+      </h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-condensed table-hover tablesorter">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Schedule</th>
+            <th>Suspend</th>
+            <th>Active</th>
+            <th>Last schedule</th>
+            <th>Age</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cron in cronjobs["items"] %}
+          <tr>
+            <td>{{ cron.metadata.name }}</td>
+            <td>{{ cron.spec.schedule }}</td>
+            <td>{{ cron.spec.suspend }}</td>
+            <td>{{ cron.status.active|length }}</td>
+            <td>{{ cron.status.last_schedule_time|duration }}</td>
+            <td class="text-right">{{ cron.metadata.creation_timestamp|duration }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
   {% if jobs and jobs["items"] %}
   <div class="panel panel-default">
     <div class="panel-heading">
@@ -327,24 +364,6 @@
   </div>
   {% endif %}
 
-  {% if cronjobs and cronjobs["items"] %}
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h3 class="panel-title">
-        <span class="glyphicon glyphicon-time"></span>
-        CronJobs
-      </h3>
-    </div>
-    <div class="table-responsive">
-      <table class="table table-condensed table-hover tablesorter">
-        <thead>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 </div>
 {% endblock %}
 

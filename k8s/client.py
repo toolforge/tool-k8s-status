@@ -60,6 +60,12 @@ def batchv1_client():
 
 
 @functools.lru_cache()
+def batchv1beta1_client():
+    """Get BatchV1beta1 API client."""
+    return kubernetes.client.BatchV1beta1Api()
+
+
+@functools.lru_cache()
 def custom_client():
     """Get CustomObjects API client."""
     return kubernetes.client.CustomObjectsApi()
@@ -174,6 +180,16 @@ def get_statefulsets(namespace, cached=True):
     v1 = appsv1_client()
     return {
         "items": v1.list_namespaced_stateful_set(namespace=namespace).items,
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+@cached("cronjobs", 300)
+def get_cronjobs(namespace, cached=True):
+    """Get a list of all cronjobs in a namespace."""
+    v1 = batchv1beta1_client()
+    return {
+        "items": v1.list_namespaced_cron_job(namespace=namespace).items,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
