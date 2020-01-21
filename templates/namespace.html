@@ -12,6 +12,25 @@
 </div>
 
 <div class="panel-group" role="tablist">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-eye-open"></span>
+        Monitoring
+      </h3>
+    </div>
+    <div class="panel-body">
+      <ul class="list-unstyled column-list">
+        <li><a href="https://grafana-labs.wikimedia.org/d/toolforge-k8s-namespace-resources/kubernetes-namespace-resources?var-namespace={{ namespace|urlencode }}" rel="nofollow">Grafana dashboard</a></li>
+        {% if namespace.startswith('tool-') %}
+        {% set tool = namespace[5:] %}
+        <li><a href="https://toolsadmin.wikimedia.org/tools/id/{{ tool|urlencode }}" rel="nofollow">Maintainer information</a></li>
+        <li><a href="https://tools.wmflabs.org/sal/tools.{{ tool|urlencode }}" rel="nofollow">SAL</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
   {% if pods and pods["items"] %}
   <div class="panel panel-default">
     <div class="panel-heading">
