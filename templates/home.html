@@ -27,11 +27,11 @@
         </tr>
         <tr>
           <th>RAM usage</th>
-          <td class="text-right">{{ metrics.mem_used_bytes|round|int|filesizeformat(True) }} of {{ metrics.mem_total_bytes|round|int|filesizeformat(True) }}</td>
+          <td class="text-right">{{ metrics.mem_used_bytes|round|int|filesizeformat(True) }} of {{ metrics.mem_total_bytes|round|int|filesizeformat(True) }} ({{ "{:.0%}".format(metrics.mem_used_bytes / metrics.mem_total_bytes) }})</td>
         </tr>
         <tr>
           <th>CPU usage</th>
-          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round(2)) }} of {{ '{:,}'.format(metrics.cpu_total|round|int) }}</td>
+          <td class="text-right">{{ '{:,}'.format(metrics.cpu_used|round(2)) }} of {{ '{:,}'.format(metrics.cpu_total|round|int) }} ({{ "{:.0%}".format(metrics.cpu_used / metrics.cpu_total) }})</td>
         </tr>
         <tr>
           <th>Kubernetes version</th>
