@@ -57,9 +57,11 @@
           <tr>
             <td><a href="{{ url_for('pod', namespace=namespace, pod=pod.metadata.name) }}">{{ pod.metadata.name }}</a></td>
             <td>
+              {% if pod.metadata.labels %}
               {% for key, value in pod.metadata.labels|dictsort %}
               <span class="label label-outline label-info">{{ key }}={{ value }}</span>
               {% endfor %}
+              {% endif %}
             </td>
             <td class="text-center">{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</td>
             <td>{{ pod.status.phase }}</td>
