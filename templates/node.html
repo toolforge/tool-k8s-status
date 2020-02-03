@@ -74,6 +74,7 @@
     </div>
   </div>
 
+  {% if node.status.conditions %}
   <div class="panel panel-default">
     <div class="panel-heading" role="tab">
       <h3 class="panel-title">
@@ -94,6 +95,7 @@
       </ul>
     </div>
   </div>
+  {% endif %}
 
   {% if pods %}
   <div class="panel panel-default">
