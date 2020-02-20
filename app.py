@@ -268,6 +268,8 @@ def contains(haystack, needle):
 @app.template_filter("duration")
 def duration(start, end=None, max_parts=3):
     """Compute a duration relative to the current time or a given time."""
+    if start is None:
+        return ""
     if end is None:
         end = datetime.datetime.now(tz=start.tzinfo)
     diff_secs = abs((end - start).total_seconds())
