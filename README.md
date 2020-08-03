@@ -8,7 +8,7 @@ Deploy on Toolforge
 Your tool will need a service account with rights to query across namespaces.
 
 ```
-$ ssh dev.tools.wmflabs.org
+$ ssh dev.toolforge.org
 $ become $TOOL_NAME
 $ mkdir -p $HOME/www/python
 $ git clone https://phabricator.wikimedia.org/source/tool-k8s-status.git \
