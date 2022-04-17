@@ -13,7 +13,7 @@ $ become $TOOL_NAME
 $ mkdir -p $HOME/www/python
 $ git clone https://phabricator.wikimedia.org/source/tool-k8s-status.git \
   $HOME/www/python/src
-$ webservice --backend=kubernetes python3.7 shell
+$ webservice --backend=kubernetes python3.9 shell
 $ python3 -m venv $HOME/www/python/venv
 $ source $HOME/www/python/venv/bin/activate
 $ pip install --upgrade pip wheel

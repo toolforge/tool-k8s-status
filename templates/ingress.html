@@ -71,7 +71,9 @@
             <td rowspan="{{ rule.http.paths|length }}" class="align-top">{{ rule.host }}</td>
             {% endif %}
             <td><tt>{{ path.path }}</tt></td>
-            <td>{{ path.backend.service_name }}:{{ path.backend.service_port }}</td>
+            <td>
+                {{ path.backend.service.name }}:{{ path.backend.service.port.number or path.backend.service.port.name }}
+            </td>
           </tr>
           {% endfor %}
           {% endfor %}
