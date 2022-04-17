@@ -40,14 +40,18 @@
       </h3>
     </div>
     <div class="panel-body">
-      <dl class="column-list">
+      <ul class="column-list">
         {% for name, data in quota["quotas"].items() %}
-        <dt>{{ name }}</dt>
-        <dd>
-          {{ data["used"] }} / {{ data["hard"] }}
-        </dd>
+        <li>
+          <dl>
+            <dt>{{ name }}</dt>
+            <dd>
+              {{ data["used"] }} / {{ data["hard"] }}
+            </dd>
+          </dl>
+        </li>
         {% endfor %}
-      </dl>
+      </ul>
     </div>
   </div>
   {% endif %}
