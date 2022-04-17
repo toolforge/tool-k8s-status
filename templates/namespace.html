@@ -31,6 +31,25 @@
     </div>
   </div>
 
+  {% if quota and quota["items"] %}
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-eye-open"></span>
+        Quotas
+      </h3>
+    </div>
+    <div class="panel-body">
+      {% for name, data in quota["items"].items() %}
+      <dt>{{ name }}</dt>
+      <dd>
+      {{ data["used"] }} / {{ data["hard"] }}
+      </dd>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   {% if pods and pods["items"] %}
   <div class="panel panel-default">
     <div class="panel-heading">

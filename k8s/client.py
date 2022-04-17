@@ -359,3 +359,27 @@ def get_summary_metrics(cached=True):
             data["cpu_used"] += parse_quantity(node["usage"]["cpu"])
 
     return data
+
+
+@cached("quota", 300)
+def get_quota(namespace, cached=True):
+    v1 = corev1_client()
+
+    quotas = v1.list_namespaced_resource_quota(namespace)
+    if len(quotas.items) != 1:
+        return {
+            "quotas": {},
+            "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+
+    quota: kubernetes.client.V1ResourceQuotaStatus = quotas.items[0].status
+
+    data = {
+        key: {"used": quota.used.get(key, None), "hard": quota.hard.get(key, None)}
+        for key in sorted(set(list(quota.used.keys()) + list(quota.hard.keys())))
+    }
+
+    return {
+        "quotas": data,
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }

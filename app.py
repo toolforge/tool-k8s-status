@@ -172,6 +172,7 @@ def namespace(namespace):
                 ),
                 "cronjobs": k8s.client.get_cronjobs(namespace, cached=cached),
                 "jobs": k8s.client.get_jobs(namespace, cached=cached),
+                "quota": k8s.client.get_quota(namespace, cached=cached),
             }
         )
     except Exception:
