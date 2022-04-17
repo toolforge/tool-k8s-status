@@ -40,10 +40,10 @@
       </h3>
     </div>
     <div class="panel-body">
-      <ul class="column-list">
+      <ul class="column-list list-unstyled">
         {% for name, data in quota["quotas"].items() %}
         <li>
-          <dl>
+          <dl style="margin-bottom: 0;">
             <dt>{{ name }}</dt>
             <dd>
               {{ data["used"] }} / {{ data["hard"] }}
