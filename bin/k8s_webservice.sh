@@ -48,7 +48,7 @@ spec:
       containers:
         #
         - name: webservice
-          image: docker-registry.tools.wmflabs.org/toolforge-python37-sssd-web:latest
+          image: docker-registry.tools.wmflabs.org/toolforge-python39-sssd-web:latest
           command:
             - /usr/bin/webservice-runner
             - --type
@@ -80,11 +80,9 @@ spec:
     name: $tool
   type: ClusterIP
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /${tool}/\$2
   labels:
     name: $tool
     toolforge: tool
@@ -92,13 +90,16 @@ metadata:
   name: $tool
 spec:
   rules:
-  - host: tools.wmflabs.org
+  - host: $tool.toolforge.org
     http:
       paths:
       - backend:
-          serviceName: $tool
-          servicePort: 8000
-        path: /${tool}(/|$)(.*)
+          service:
+            name: $tool
+            port:
+              number: 8000
+        path: /
+        pathType: Prefix
 EOF
 }
 
@@ -114,7 +115,7 @@ function shell {
     local tool=${1:?shell expects a tool name}
     shift
     exec $HOME/bin/kubectl run interactive \
-        --image=docker-registry.tools.wmflabs.org/toolforge-python37-sssd-base:latest \
+        --image=docker-registry.tools.wmflabs.org/toolforge-python39-sssd-base:latest \
         --restart=Never \
         --command=true \
         --env=HOME=$HOME \

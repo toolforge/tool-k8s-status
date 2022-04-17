@@ -48,9 +48,9 @@ def appsv1_client():
 
 
 @functools.lru_cache()
-def extV1b1_client():
+def networkingv1_client():
     """Get ExtensionsV1beta1 API client."""
-    return kubernetes.client.ExtensionsV1beta1Api()
+    return kubernetes.client.NetworkingV1Api()
 
 
 @functools.lru_cache()
@@ -72,7 +72,7 @@ def custom_client():
 
 
 def get_version():
-    """Get version information about the Kuberenetes cluster."""
+    """Get version information about the Kubernetes cluster."""
     return kubernetes.client.VersionApi().get_code()
 
 
@@ -109,7 +109,7 @@ def get_services(namespace, cached=True):
 @cached("ingresses", 300)
 def get_ingresses(namespace, cached=True):
     """Get a list of all ingresses in a namespace."""
-    v1 = extV1b1_client()
+    v1 = networkingv1_client()
     return {
         "items": v1.list_namespaced_ingress(namespace=namespace).items,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -119,7 +119,7 @@ def get_ingresses(namespace, cached=True):
 @cached("ingresses", 300)
 def get_ingress(namespace, name, cached=True):
     """Get a list of all ingresses in a namespace."""
-    v1 = extV1b1_client()
+    v1 = networkingv1_client()
     return {
         "ingress": v1.read_namespaced_ingress(name, namespace),
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -135,7 +135,7 @@ def get_ingresses_by_namespace(cached=True):
         "active_namespaces": 0,
         "total_ingresses": 0,
     }
-    v1 = extV1b1_client()
+    v1 = networkingv1_client()
     for ingress in v1.list_ingress_for_all_namespaces().items:
         ns = ingress.metadata.namespace
         data["namespaces"][ns].append(ingress)

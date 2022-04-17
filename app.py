@@ -24,16 +24,13 @@ import logging
 import os
 
 import flask
-import jinja2
 import natsort
-import werkzeug.contrib.fixers
 import yaml
 
 import k8s.client
 
 
 app = flask.Flask(__name__)
-app.wsgi_app = werkzeug.contrib.fixers.ProxyFix(app.wsgi_app)
 
 # Load configuration from YAML file(s).
 # See default_config.yaml for more information
@@ -85,7 +82,10 @@ def nodes():
 
         ctx.update(
             {
-                "nodes": k8s.client.get_nodes(cached=cached),
+                "nodes": natsort.natsorted(
+                    k8s.client.get_nodes(cached=cached),
+                    key=lambda node: node["metadata"]["name"],
+                ),
                 "metrics": {
                     m["metadata"]["name"]: m
                     for m in k8s.client.get_nodes_metrics(cached=cached)[
@@ -307,11 +307,3 @@ def pprint_yaml(obj):
 def parse_quantity(obj):
     """Parse kubernetes quantity like 200Mi to a decimal number."""
     return k8s.client.parse_quantity(obj)
-
-
-@app.template_filter("natsort")
-@jinja2.filters.environmentfilter
-def filter_natsort(env, itr, reverse=False, attribute=None):
-    """Sort an iterator by "natural" order."""
-    key_func = jinja2.filters.make_attrgetter(env, attribute)
-    return natsort.natsorted(itr, key=key_func, reverse=reverse)

@@ -1,6 +1,6 @@
 cachelib
 flask
-kubernetes
+kubernetes==20.13.0
 ldap3
 natsort
 PyYAML

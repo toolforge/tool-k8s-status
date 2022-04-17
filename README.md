@@ -16,7 +16,7 @@ $ git clone https://phabricator.wikimedia.org/source/tool-k8s-status.git \
 $ webservice --backend=kubernetes python3.7 shell
 $ python3 -m venv $HOME/www/python/venv
 $ source $HOME/www/python/venv/bin/activate
-$ pip install --upgrade pip
+$ pip install --upgrade pip wheel
 $ pip install -r $HOME/www/python/src/requirements.txt
 $ exit
 $ www/python/bin/k8s_webservice.sh start

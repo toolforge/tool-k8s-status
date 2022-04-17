@@ -23,7 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for node in nodes["items"]|natsort(attribute="metadata.name") %}
+          {% for node in nodes["items"] %}
           {% set m = metrics.get(node.metadata.name) %}
           <tr>
             <td><a href="{{ url_for('node', name=node.metadata.name) }}">{{ node.metadata.name }}</a></td>
