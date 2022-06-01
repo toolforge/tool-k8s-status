@@ -61,6 +61,13 @@ spec:
             name: http
             protocol: TCP
           workingDir: /data/project/${tool}/
+          resources:
+            limits:
+              cpu: 1
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
 ---
 apiVersion: v1
 kind: Service
@@ -114,14 +121,14 @@ function stopsvc {
 function shell {
     local tool=${1:?shell expects a tool name}
     shift
-    exec $HOME/bin/kubectl run interactive \
+    exec /usr/bin/kubectl run interactive \
         --image=docker-registry.tools.wmflabs.org/toolforge-python39-sssd-base:latest \
         --restart=Never \
         --command=true \
         --env=HOME=$HOME \
         --labels='toolforge=tool' \
         --rm=true \
-        --serviceaccount=${tool}-obs \
+        --overrides="{ \"spec\": { \"serviceAccount\": \"${tool}-obs\" } }" \
         --stdin=true \
         --tty=true \
         -- "$@"
@@ -162,7 +169,7 @@ case $cmd in
         shell "$tool" /bin/bash -il
     ;;
     debug)
-        shell "$tool" $HOME/www/python/venv/bin/flask shell
+        shell "$tool" bash -c "cd $HOME/www/python/src && $HOME/www/python/venv/bin/flask shell"
     ;;
     tail)
         /usr/bin/kubectl logs -f $(_get_pod $tool)
