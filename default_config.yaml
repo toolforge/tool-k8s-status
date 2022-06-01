@@ -42,4 +42,4 @@ PREFERRED_URL_SCHEME: https
 PROJECT: tools
 
 # Redis server for use as cache
-REDIS_HOST: tools-redis.svc.eqiad.wmflabs
+REDIS_HOST: redis.svc.tools.eqiad1.wikimedia.cloud
