@@ -83,7 +83,7 @@ def nodes():
         ctx.update(
             {
                 "nodes": natsort.natsorted(
-                    k8s.client.get_nodes(cached=cached),
+                    k8s.client.get_nodes(cached=cached)["items"],
                     key=lambda node: node["metadata"]["name"],
                 ),
                 "metrics": {
