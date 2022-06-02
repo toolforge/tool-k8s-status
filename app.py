@@ -84,7 +84,7 @@ def nodes():
             {
                 "nodes": natsort.natsorted(
                     k8s.client.get_nodes(cached=cached)["items"],
-                    key=lambda node: node["metadata"]["name"],
+                    key=lambda node: node.metadata.name,
                 ),
                 "metrics": {
                     m["metadata"]["name"]: m
