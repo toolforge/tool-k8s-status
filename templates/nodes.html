@@ -23,7 +23,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for node in nodes["items"] %}
+          {% for node in nodes %}
           {% set m = metrics.get(node.metadata.name) %}
           <tr>
             <td><a href="{{ url_for('node', name=node.metadata.name) }}">{{ node.metadata.name }}</a></td>
