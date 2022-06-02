@@ -19,11 +19,15 @@
 """Caching object."""
 import functools
 import hashlib
+import logging
 import os
 import pwd
 
 import cachelib
 import flask
+
+
+logger = logging.getLogger(__name__)
 
 
 @functools.lru_cache()
@@ -57,8 +61,11 @@ def cached(key, expiry=3600):
             cached = kwargs.get("cached", True)
             r = cache().get(cache_key) if cached else None
             if r is None:
+                if cached:
+                    logger.debug("Cache miss for %s", cache_key)
                 r = f(*args, **kwargs)
-                cache().set(key, r, timeout=expiry)
+                cache().set(cache_key, r, timeout=expiry)
+                logger.debug("Cached value for %s for %s", cache_key, expiry)
             return r
 
         return wrapper
