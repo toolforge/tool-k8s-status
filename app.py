@@ -70,6 +70,13 @@ def home():
     return flask.render_template("home.html", **ctx)
 
 
+@app.route("/robots.txt")
+def robots_txt():
+    return flask.Response(
+        "User-Agent: *\nDisallow: /\n", mimetype="text/plain"
+    )
+
+
 @app.route("/nodes/")
 def nodes():
     """List nodes."""
