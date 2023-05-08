@@ -24,6 +24,7 @@
           <tr>
             <th>Namespace</th>
             <th>Pod</th>
+            <th>Container</th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +32,7 @@
           <tr>
             <td><a href="{{ url_for('namespace', namespace=pod.0) }}">{{ pod.0 }}</a></td>
             <td><a href="{{ url_for('pod', namespace=pod.0, pod=pod.1) }}">{{ pod.1 }}</a></td>
+            <td><a href="{{ url_for('pod', namespace=pod.0, pod=pod.1) }}#container-{{ pod.2 }}">{{ pod.2 }}</a></td>
           </tr>
           {% endfor %}
         </tbody>

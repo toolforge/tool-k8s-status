@@ -16,18 +16,18 @@
             <th>Repository</th>
             <th>Name</th>
             <th>Tag</th>
-            <th>Active pods</th>
+            <th>Active containers</th>
           </tr>
         </thead>
         <tbody>
-          {% for image, pods in images["items"]|dictsort %}
+          {% for image, containers in images["items"]|dictsort %}
           {% set repo, name_tag = image.split("/", 1) %}
           {% set name, tag = name_tag.split(":", 1) %}
           <tr>
             <td>{{ repo }}</td>
             <td><a href="{{ url_for('image', name=image) }}">{{ name }}</a></td>
             <td>{{ tag }}</td>
-            <td class="text-right">{{ pods|length }}</td>
+            <td class="text-right">{{ containers|length }}</td>
           </tr>
           {% endfor %}
         </tbody>

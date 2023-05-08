@@ -75,7 +75,7 @@
     <div class="panel-body panel-group">
       {% for container in pod.spec.containers %}
       {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name)|default([], true)|first %}
-      <div class="panel panel-default">
+      <div class="panel panel-default" id="container-{{ container.name }}">
         <div class="panel-heading">
           <h4 class="panel-title">
             <span class="glyphicon glyphicon-tag"></span>
@@ -87,7 +87,7 @@
             <dt>Container id</dt>
             <dd>{{ container_status.container_id }}</dd>
             <dt>Image</dt>
-            <dd>{{ container.image }}</dd>
+            <dd><a href="{{ url_for('image', name=container.image) }}">{{ container.image }}</a></dd>
             <dt>Image id</dt>
             <dd>{{ container_status.image_id }}</dd>
             {% if container.ports %}

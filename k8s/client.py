@@ -248,7 +248,7 @@ def get_images(cached=True):
     for pod in get_all_pods(cached=cached)["items"]:
         for container in pod.spec.containers:
             data["items"][container.image].append(
-                (pod.metadata.namespace, pod.metadata.name)
+                (pod.metadata.namespace, pod.metadata.name, container.name)
             )
     return data
 
