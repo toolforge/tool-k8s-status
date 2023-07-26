@@ -72,6 +72,7 @@ def home():
 
 @app.route("/robots.txt")
 def robots_txt():
+    """Return a deny-all robots policy."""
     return flask.Response(
         "User-Agent: *\nDisallow: /\n", mimetype="text/plain"
     )
