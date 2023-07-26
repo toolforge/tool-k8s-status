@@ -12,7 +12,7 @@ $ ssh dev.toolforge.org
 $ become $TOOL_NAME
 $ mkdir -p $HOME/www/python
 $ git clone https://gitlab.wikimedia.org/toolforge-repos/k8s-status $HOME/www/python/src
-$ webservice --backend=kubernetes python3.9 shell
+$ webservice --backend=kubernetes python3.11 shell
 $ python3 -m venv $HOME/www/python/venv
 $ source $HOME/www/python/venv/bin/activate
 $ pip install --upgrade pip wheel

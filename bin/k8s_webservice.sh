@@ -48,13 +48,9 @@ spec:
       containers:
         #
         - name: webservice
-          image: docker-registry.tools.wmflabs.org/toolforge-python39-sssd-web:latest
+          image: docker-registry.tools.wmflabs.org/toolforge-python311-sssd-web:latest
           command:
             - /usr/bin/webservice-runner
-            - --type
-            - uwsgi-python
-            - --port
-            - "8000"
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
@@ -122,7 +118,7 @@ function shell {
     local tool=${1:?shell expects a tool name}
     shift
     exec /usr/bin/kubectl run interactive \
-        --image=docker-registry.tools.wmflabs.org/toolforge-python39-sssd-base:latest \
+        --image=docker-registry.tools.wmflabs.org/toolforge-python311-sssd-base:latest \
         --restart=Never \
         --command=true \
         --env=HOME=$HOME \
