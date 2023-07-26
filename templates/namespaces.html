@@ -11,10 +11,8 @@
     </div>
     <div class="panel-body">
       <ul class="list-unstyled column-list">
-        {% for ns in namespaces["items"] if ns.metadata.name in active %}
-        {% if not ns.metadata.name.startswith("tool-") %}
+        {% for ns in namespaces["items"] if not ns.metadata.name.startswith("tool-") %}
         <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
-        {% endif %}
         {% endfor %}
       </ul>
     </div>
@@ -29,10 +27,8 @@
     </div>
     <div class="panel-body">
       <ul class="list-unstyled column-list">
-        {% for ns in namespaces["items"] if ns.metadata.name in active %}
-        {% if ns.metadata.name.startswith("tool-") %}
+        {% for ns in namespaces["items"] if ns.metadata.name in active and ns.metadata.name.startswith("tool-") %}
         <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
-        {% endif %}
         {% endfor %}
       </ul>
     </div>
@@ -49,7 +45,7 @@
     </div>
     <div id="allns-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="allns-heading">
       <ul class="list-unstyled column-list">
-        {% for ns in namespaces["items"] if ns.metadata.name not in active %}
+        {% for ns in namespaces["items"] if ns.metadata.name not in active and ns.metadata.name.startswith("tool-") %}
         <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
         {% endfor %}
       </ul>
