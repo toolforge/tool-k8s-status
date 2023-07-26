@@ -6,13 +6,33 @@
     <div class="panel-heading">
       <h3 class="panel-title">
         <span class="glyphicon glyphicon-folder-open"></span>
-        Active namespaces
+        Infrastructure namespaces
       </h3>
     </div>
     <div class="panel-body">
       <ul class="list-unstyled column-list">
         {% for ns in namespaces["items"] if ns.metadata.name in active %}
+        {% if not ns.metadata.name.startswith("tool-") %}
         <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-folder-open"></span>
+        Active tool namespaces
+      </h3>
+    </div>
+    <div class="panel-body">
+      <ul class="list-unstyled column-list">
+        {% for ns in namespaces["items"] if ns.metadata.name in active %}
+        {% if ns.metadata.name.startswith("tool-") %}
+        <li><a href="{{ url_for('namespace', namespace=ns.metadata.name) }}" rel="nofollow">{{ ns.metadata.name }}</a></li>
+        {% endif %}
         {% endfor %}
       </ul>
     </div>
