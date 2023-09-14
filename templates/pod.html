@@ -326,20 +326,6 @@
   </div>
   {% endif %}
 
-  <div class="panel panel-default">
-    <div id="yaml-heading" class="panel-heading" role="tab">
-      <h3 class="panel-title">
-        <a href="#yaml-body" class="collapsed" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="yaml-body">
-          <span class="glyphicon glyphicon-floppy-disk"></span>
-          YAML dump
-        </a>
-      </h3>
-    </div>
-    <div id="yaml-body" class="panel-body panel-collapse collapse" role="tabpanel" aria-labelledby="yaml-heading">
-      <pre><code class="language-yaml">{{ pod.to_dict()|yaml }}</code></pre>
-    </div>
-  </div>
-
 </div>
 {% endblock %}
 

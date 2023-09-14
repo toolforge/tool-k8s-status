@@ -202,8 +202,7 @@ def pod(namespace, pod):
     except Exception:
         app.logger.exception("Error collecting namespace %s", namespace)
     if "pod" in ctx and ctx["pod"]:
-        tpl = "pod_dbg.html" if "debug" in flask.request.args else "pod.html"
-        return flask.render_template(tpl, **ctx)
+        return flask.render_template("pod.html", **ctx)
     else:
         flask.flash("Pod {} not found.".format(pod), "danger")
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
