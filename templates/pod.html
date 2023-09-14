@@ -139,10 +139,6 @@
                 <dd>{{ container_status.state.terminated.reason }}</dd>
                 <dt>Exit code</dt>
                 <dd>{{ container_status.state.terminated.exit_code }}</dd>
-                {% if container_status.state.terminated.message %}
-                <dt>Message</dt>
-                <dd>{{ container_status.state.terminated.message }}</dd>
-                {% endif %}
                 {% if container_status.state.terminated.signal %}
                 <dt>Signal</dt>
                 <dd>{{ container_status.state.terminated.signal }}</dd>
@@ -182,10 +178,6 @@
                 <dd>{{ container_status.last_state.terminated.reason }}</dd>
                 <dt>Exit code</dt>
                 <dd>{{ container_status.last_state.terminated.exit_code }}</dd>
-                {% if container_status.last_state.terminated.message %}
-                <dt>Message</dt>
-                <dd>{{ container_status.last_state.terminated.message }}</dd>
-                {% endif %}
                 {% if container_status.last_state.terminated.signal %}
                 <dt>Signal</dt>
                 <dd>{{ container_status.last_state.terminated.signal }}</dd>
