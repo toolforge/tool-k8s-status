@@ -57,6 +57,12 @@ spec:
             name: http
             protocol: TCP
           workingDir: /data/project/${tool}/
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
           resources:
             limits:
               cpu: 1

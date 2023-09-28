@@ -78,6 +78,11 @@ def robots_txt():
     )
 
 
+@app.route("/healthz")
+def healthz():
+    return "ok"
+
+
 @app.route("/nodes/")
 def nodes():
     """List nodes."""
