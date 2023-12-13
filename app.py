@@ -91,6 +91,8 @@ def nodes():
         cached = "purge" not in flask.request.args
         pods = collections.defaultdict(int)
         for pod in k8s.client.get_all_pods(cached=cached)["items"]:
+            if pod["status"]["phase"] == "Succeeded":
+                continue
             pods[pod.spec.node_name] += 1
 
         ctx.update(
