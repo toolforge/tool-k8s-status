@@ -25,7 +25,7 @@
         <dt>Ready</dt>
         <dd>{{ node.status.conditions|selectattr('type', 'equalto', 'Ready')|first|attr('status') }}</dd>
         <dt>Role</dt>
-        <dd>{% if "node-role.kubernetes.io/master" in node.metadata.labels  %}control{% else %}worker{% endif %}</dd>
+        <dd>{% if "node-role.kubernetes.io/control-plane" in node.metadata.labels %}control{% else %}worker{% endif %}</dd>
         <dt>CPU usage</dt>
         <dd>
           {{ metrics.usage.cpu|parse_quantity|round(2) }} of

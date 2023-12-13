@@ -28,7 +28,13 @@
           <tr>
             <td><a href="{{ url_for('node', name=node.metadata.name) }}">{{ node.metadata.name }}</a></td>
             <td>{{ node.status.conditions|selectattr('type', 'equalto', 'Ready')|first|attr('status') }}</td>
-            <td>{% if "node-role.kubernetes.io/master" in node.metadata.labels  %}control{% else %}worker{% endif %}</td>
+            <td>
+              {% if "node-role.kubernetes.io/control-plane" in node.metadata.labels %}
+                control
+              {% else %}
+                worker
+              {% endif %}
+            </td>
             <td>{{ pods[node.metadata.name] }}</td>
             {% if m %}
             <td>{{ "{:.0%}".format(m.usage.cpu|parse_quantity / node.status.allocatable.cpu|parse_quantity) }}</td>
