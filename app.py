@@ -80,6 +80,7 @@ def robots_txt():
 
 @app.route("/healthz")
 def healthz():
+    """Respond to health check requests."""
     return "ok"
 
 
