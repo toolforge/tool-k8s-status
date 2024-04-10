@@ -164,6 +164,7 @@ def namespace(namespace):
     """Get details for a given namespace."""
     ctx = {
         "namespace": namespace,
+        "project": app.config["PROJECT"],
     }
     try:
         cached = "purge" not in flask.request.args
