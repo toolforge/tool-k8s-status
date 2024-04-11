@@ -40,6 +40,7 @@ PREFERRED_URL_SCHEME: https
 
 # Cloud VPS project name for this Toolforge deployment (tools, toolsbeta)
 PROJECT: tools
+TOOLSADMIN_URL: https://toolsadmin.wikimedia.org
 
 # Redis server for use as cache
 REDIS_HOST: redis.svc.tools.eqiad1.wikimedia.cloud

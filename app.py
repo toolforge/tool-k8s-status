@@ -164,7 +164,6 @@ def namespace(namespace):
     """Get details for a given namespace."""
     ctx = {
         "namespace": namespace,
-        "project": app.config["PROJECT"],
     }
     try:
         cached = "purge" not in flask.request.args
@@ -329,5 +328,7 @@ def parse_quantity(obj):
 @app.context_processor
 def inject_base_variables():
     return {
+        "project": app.config["PROJECT"],
+        "toolsadmin_url": app.config["TOOLSADMIN_URL"],
         "banner": app.config.get("BANNER"),
     }
