@@ -19,6 +19,7 @@ $ pip install --upgrade pip wheel
 $ pip install -r $HOME/www/python/src/requirements.txt
 $ exit
 $ www/python/src/bin/k8s_webservice.sh start
+$ toolforge jobs load $HOME/www/python/src/jobs.yaml
 ```
 
 License
