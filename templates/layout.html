@@ -17,6 +17,13 @@
     {% block css %}{% endblock %}
   </head>
   <body>
+    {% block banner %}
+    {% if banner %}
+    <div class="banner">
+      {{ banner }}
+    </div>
+    {% endif %}
+    {% endblock %}
     {% block navbar %}
     <nav class="navbar navbar-default navbar-static-top">
       <div class="container-fluid">

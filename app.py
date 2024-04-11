@@ -324,3 +324,10 @@ def pprint_yaml(obj):
 def parse_quantity(obj):
     """Parse kubernetes quantity like 200Mi to a decimal number."""
     return k8s.client.parse_quantity(obj)
+
+
+@app.context_processor
+def inject_base_variables():
+    return {
+        "banner": app.config.get("BANNER"),
+    }

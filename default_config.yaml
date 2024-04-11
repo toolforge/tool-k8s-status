@@ -43,3 +43,6 @@ PROJECT: tools
 
 # Redis server for use as cache
 REDIS_HOST: redis.svc.tools.eqiad1.wikimedia.cloud
+
+# Banner to show on top of all pages
+BANNER: ""
