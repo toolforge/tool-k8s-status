@@ -23,13 +23,13 @@ SESSION_COOKIE_NAME: k8sstatus
 # hosted in the same domain. The value given here will only work if for the
 # my-first-flask-oauth-tool account, so you should override it in your
 # config.yaml if you have forked the tool for use with anohter account.
-SESSION_COOKIE_PATH: /k8s-status
+SESSION_COOKIE_PATH: /
 
 # Session cookies should only be sent over HTTPS secured connections
-SESSION_COOKIE_SECURE: True
+SESSION_COOKIE_SECURE: true
 
 # Only send the cookie header to the client when its content changes
-SESSION_REFRESH_EACH_REQUEST: False
+SESSION_REFRESH_EACH_REQUEST: false
 
 # Generate https://... links by default
 PREFERRED_URL_SCHEME: https
