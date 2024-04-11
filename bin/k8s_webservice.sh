@@ -18,6 +18,7 @@ function usage {
 
 function startsvc {
     local tool=${1:?startsvc expects a tool name}
+    local domain="$(python3 -c 'from toolsws.config import load_config; print(load_config()["public_domain"])')"
     echo "Starting webservice..."
     cat <<EOF | /usr/bin/kubectl apply -f -
 ---
@@ -99,7 +100,7 @@ metadata:
   name: $tool
 spec:
   rules:
-  - host: $tool.toolforge.org
+  - host: $tool.$domain
     http:
       paths:
       - backend:
