@@ -18,7 +18,7 @@ $ source $HOME/www/python/venv/bin/activate
 $ pip install --upgrade pip wheel
 $ pip install -r $HOME/www/python/src/requirements.txt
 $ exit
-$ www/python/bin/k8s_webservice.sh start
+$ www/python/src/bin/k8s_webservice.sh start
 ```
 
 License
