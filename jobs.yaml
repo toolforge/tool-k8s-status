@@ -1,0 +1,5 @@
+  # use k8s internal endpoint for environment-neutral URL
+- command: curl --max-time -sS 'http://k8s-status.tool-k8s-status.svc:8000/?purge'
+  image: python3.11
+  name: update-cache
+  schedule: 3/5 * * * *
