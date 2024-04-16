@@ -327,6 +327,7 @@ def parse_quantity(obj):
 
 @app.context_processor
 def inject_base_variables():
+    """Variables to be usable on all templates."""
     return {
         "project": app.config["PROJECT"],
         "toolsadmin_url": app.config["TOOLSADMIN_URL"],
