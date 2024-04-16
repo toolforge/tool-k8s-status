@@ -238,7 +238,7 @@ def get_cronjobs_by_namespace(cached=True):
         "total_cronjobs": 0,
     }
     v1 = batchv1_client()
-    for cronjob in v1.list_cronjob_for_all_namespaces().items:
+    for cronjob in v1.list_cron_job_for_all_namespaces().items:
         ns = cronjob.metadata.namespace
         data["namespaces"][ns].append(cronjob)
         data["total_cronjobs"] += 1
