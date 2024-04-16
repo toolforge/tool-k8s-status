@@ -208,7 +208,7 @@ def get_all_pods(cached=True):
     }
 
 
-@cached("toolpods", 300)
+@cached("toolpods", 5400)
 def get_pods_by_namespace(cached=True):
     """Get a collection of all Pods grouped by namespace."""
     data = {
@@ -309,7 +309,7 @@ def get_node(name, cached=True):
     }
 
 
-@cached("metrics:namespaces", 300)
+@cached("metrics:namespaces", 5400)
 def get_active_namespaces(cached=True):
     """Get a list of all namespaces which should be considered 'active'."""
     active = set(get_pods_by_namespace(cached=cached)["namespaces"].keys())
