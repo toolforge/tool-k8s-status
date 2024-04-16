@@ -228,6 +228,24 @@ def get_pods_by_namespace(cached=True):
     return data
 
 
+@cached("cronjobs:__by_ns__", 5400)
+def get_cronjobs_by_namespace(cached=True):
+    """Get a collection of all CronJobs grouped by namespace."""
+    data = {
+        "namespaces": collections.defaultdict(list),
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "active_namespaces": 0,
+        "total_cronjobs": 0,
+    }
+    v1 = batchv1_client()
+    for cronjob in v1.list_cronjob_for_all_namespaces().items:
+        ns = cronjob.metadata.namespace
+        data["namespaces"][ns].append(cronjob)
+        data["total_cronjobs"] += 1
+    data["active_namespaces"] = len(data["namespaces"].keys())
+    return data
+
+
 @cached("pods", 300)
 def get_pod(namespace, pod, cached=True):
     """Get details for a pod."""
@@ -313,6 +331,9 @@ def get_node(name, cached=True):
 def get_active_namespaces(cached=True):
     """Get a list of all namespaces which should be considered 'active'."""
     active = set(get_pods_by_namespace(cached=cached)["namespaces"].keys())
+    active.update(
+        get_cronjobs_by_namespace(cached=cached)["namespaces"].keys()
+    )
     # Some namespaces are "active" by including only an Ingress that
     # redirects to some other URL space
     active.update(
