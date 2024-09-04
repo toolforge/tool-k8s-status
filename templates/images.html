@@ -22,7 +22,11 @@
         <tbody>
           {% for image, containers in images["items"]|dictsort %}
           {% set repo, name_tag = image.split("/", 1) %}
+          {% if ":" in name_tag %}
           {% set name, tag = name_tag.split(":", 1) %}
+          {% else %}
+          {% set name, tag = name_tag, "latest" %}
+          {% endif %}
           <tr>
             <td>{{ repo }}</td>
             <td><a href="{{ url_for('image', name=image) }}">{{ name }}</a></td>
