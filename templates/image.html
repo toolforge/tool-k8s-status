@@ -15,8 +15,10 @@
 <div class="panel-group" role="tablist">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <span class="glyphicon glyphicon-modal-window"></span>
-      Pods
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-modal-window"></span>
+        Pods
+      </h3>
     </div>
     <div class="table-responsive">
       <table class="table table-condensed table-hover tablesorter">
@@ -28,11 +30,39 @@
           </tr>
         </thead>
         <tbody>
-          {% for pod in pods %}
+          {% for pod in pods if pod.3 == "pod" %}
           <tr>
             <td><a href="{{ url_for('namespace', namespace=pod.0) }}">{{ pod.0 }}</a></td>
             <td><a href="{{ url_for('pod', namespace=pod.0, pod=pod.1) }}">{{ pod.1 }}</a></td>
             <td><a href="{{ url_for('pod', namespace=pod.0, pod=pod.1) }}#container-{{ pod.2 }}">{{ pod.2 }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">
+        <span class="glyphicon glyphicon-time"></span>
+        CronJobs
+      </h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-condensed table-hover tablesorter">
+        <thead>
+          <tr>
+            <th>Namespace</th>
+            <th>Name</th>
+            <th>Container</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in pods if job.3 == "cron" %}
+          <tr>
+            <td><a href="{{ url_for('namespace', namespace=job.0) }}">{{ job.0 }}</a></td>
+            <td>{{ job.1 }}</td>
+            <td>{{ job.2 }}</td>
           </tr>
           {% endfor %}
         </tbody>

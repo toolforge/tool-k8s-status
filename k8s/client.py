@@ -265,9 +265,28 @@ def get_images(cached=True):
     }
     for pod in get_all_pods(cached=cached)["items"]:
         for container in pod.spec.containers:
-            data["items"][container.image].append(
-                (pod.metadata.namespace, pod.metadata.name, container.name)
+            use = (
+                pod.metadata.namespace,
+                pod.metadata.name,
+                container.name,
+                "pod",
             )
+            data["items"][container.image].append(use)
+
+    # T342848: track images from cronjobs
+    # FIXME: this will double count any running job captured above
+    crons = get_cronjobs_by_namespace(cached=cached)
+    for namespace, jobs in crons["namespaces"].items():
+        for job in jobs:
+            tmpl = job.spec.job_template
+            for container in tmpl.spec.template.spec.containers:
+                use = (
+                    namespace,
+                    job.metadata.name,
+                    container.name,
+                    "cron",
+                )
+                data["items"][container.image].append(use)
     return data
 
 
