@@ -264,6 +264,10 @@ def get_images(cached=True):
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
     for pod in get_all_pods(cached=cached)["items"]:
+        # Finished job pod (or similar), so ignore.
+        if pod.status.phase in ("Succeeded", "Failed"):
+            continue
+
         for container in pod.spec.containers:
             use = (
                 pod.metadata.namespace,
