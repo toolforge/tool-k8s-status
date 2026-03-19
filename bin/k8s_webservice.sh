@@ -110,6 +110,25 @@ spec:
               number: 8000
         path: /
         pathType: Prefix
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  labels:
+    name: taavi-test
+    toolforge: tool
+    tool.toolforge.org/service: "true"
+  name: $tool
+spec: 
+  parentRefs:
+    - namespace: istio-gateway
+      name: toolforge
+  hostnames:
+    - $tool.$domain
+  rules: 
+    - backendRefs:
+        - name: $tool
+          port: 8000
 EOF
 }
 
