@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Kubernetes client and data collection."""
+
 import collections
 import datetime
 import functools
@@ -25,7 +26,6 @@ import kubernetes
 import kubernetes.utils.quantity
 
 from .cache import cached
-
 
 kubernetes.config.load_incluster_config()
 

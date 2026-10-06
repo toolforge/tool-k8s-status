@@ -49,7 +49,7 @@ spec:
       containers:
         #
         - name: webservice
-          image: docker-registry.tools.wmflabs.org/toolforge-python311-sssd-web:latest
+          image: docker-registry.tools.wmflabs.org/toolforge-python313-sssd-web:latest
           command:
             - /usr/bin/webservice-runner
           imagePullPolicy: Always
@@ -165,42 +165,42 @@ function _get_pod {
 
 wmcsproject=$(</etc/wmcs-project)
 if ! [[ $USER == "${wmcsproject}."* ]]; then
-   printf >&2 '%s: user name does not start with "%s": %s\n' "$0" "$wmcsproject" "$USER"
-   usage 1
+    printf >&2 '%s: user name does not start with "%s": %s\n' "$0" "$wmcsproject" "$USER"
+    usage 1
 fi
 
-prefix=$(($(echo -n $wmcsproject | wc -c)+1))
+prefix=$(($(echo -n $wmcsproject | wc -c) + 1))
 tool="${USER:prefix}"
 cmd=${1:-help}
 
 case $cmd in
-    start)
-        startsvc "$tool"
+start)
+    startsvc "$tool"
     ;;
-    stop)
-        stopsvc "$tool"
+stop)
+    stopsvc "$tool"
     ;;
-    status)
-        /usr/bin/kubectl get pod $(_get_pod $tool)
+status)
+    /usr/bin/kubectl get pod $(_get_pod $tool)
     ;;
-    restart)
-        /usr/bin/kubectl delete pod $(_get_pod $tool)
+restart)
+    /usr/bin/kubectl delete pod $(_get_pod $tool)
     ;;
-    shell)
-        echo "Starting interactive shell..."
-        shell "$tool" /bin/bash -il
+shell)
+    echo "Starting interactive shell..."
+    shell "$tool" /bin/bash -il
     ;;
-    debug)
-        shell "$tool" bash -c "cd $HOME/www/python/src && $HOME/www/python/venv/bin/flask shell"
+debug)
+    shell "$tool" bash -c "cd $HOME/www/python/src && $HOME/www/python/venv/bin/flask shell"
     ;;
-    tail)
-        /usr/bin/kubectl logs -f $(_get_pod $tool)
+tail)
+    /usr/bin/kubectl logs -f $(_get_pod $tool)
     ;;
-    --help|-h|help)
-        usage 0
+--help | -h | help)
+    usage 0
     ;;
-    *)
-        echo "Unknown command: ${cmd}" 1>&2
-        usage 1
+*)
+    echo "Unknown command: ${cmd}" 1>&2
+    usage 1
     ;;
 esac
