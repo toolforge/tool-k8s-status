@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # This file is part of k8s-status
 #
@@ -18,6 +17,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Web UI for exploring a Toolfroge Kubernetes cluster."""
+
 import collections
 import datetime
 import logging
@@ -28,7 +28,6 @@ import natsort
 import yaml
 
 import k8s.client
-
 
 app = flask.Flask(__name__)
 
@@ -42,7 +41,7 @@ try:
     app.config.update(
         yaml.safe_load(open(os.path.join(__dir__, "config.yaml")))
     )
-except IOError:
+except OSError:
     # It is ok if there is no local config file
     pass
 
@@ -209,10 +208,10 @@ def pod(namespace, pod):
         )
     except Exception:
         app.logger.exception("Error collecting namespace %s", namespace)
-    if "pod" in ctx and ctx["pod"]:
+    if ctx.get("pod"):
         return flask.render_template("pod.html", **ctx)
     else:
-        flask.flash("Pod {} not found.".format(pod), "danger")
+        flask.flash(f"Pod {pod} not found.", "danger")
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
 
 
@@ -233,10 +232,10 @@ def ingress(namespace, name):
         )
     except Exception:
         app.logger.exception("Error collecting namespace %s", namespace)
-    if "ingress" in ctx and ctx["ingress"]:
+    if ctx.get("ingress"):
         return flask.render_template("ingress.html", **ctx)
     else:
-        flask.flash("Ingress {} not found.".format(name), "danger")
+        flask.flash(f"Ingress {name} not found.", "danger")
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
 
 
@@ -291,24 +290,24 @@ def duration(start, end=None, max_parts=3):
     diff_secs = abs((end - start).total_seconds())
     parts = []
     if diff_secs > 31556952:
-        parts.append("{}y".format(int(diff_secs // 31556952)))
+        parts.append(f"{int(diff_secs // 31556952)}y")
         diff_secs = diff_secs % 31556952
     if diff_secs > 604800:
-        parts.append("{}w".format(int(diff_secs // 604800)))
+        parts.append(f"{int(diff_secs // 604800)}w")
         diff_secs = diff_secs % 604800
     if diff_secs > 86400:
-        parts.append("{}d".format(int(diff_secs // 86400)))
+        parts.append(f"{int(diff_secs // 86400)}d")
         diff_secs = diff_secs % 86400
     if diff_secs > 3600:
-        parts.append("{}h".format(int(diff_secs // 3600)))
+        parts.append(f"{int(diff_secs // 3600)}h")
         diff_secs = diff_secs % 3600
     if diff_secs > 60:
-        parts.append("{}m".format(int(diff_secs // 60)))
+        parts.append(f"{int(diff_secs // 60)}m")
         diff_secs = diff_secs % 60
     if diff_secs >= 1:
-        parts.append("{}s".format(int(diff_secs)))
+        parts.append(f"{int(diff_secs)}s")
     if not parts:
-        parts.append("{}ms".format(int(diff_secs * 1000)))
+        parts.append(f"{int(diff_secs * 1000)}ms")
     parts = parts[:max_parts]
     return "".join(parts)
 
