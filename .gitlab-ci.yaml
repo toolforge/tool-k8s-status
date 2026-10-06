@@ -1,4 +1,0 @@
-include:
-  - project: repos/cloud/cicd/gitlab-ci
-    file: /py3.11-bookworm-tox/gitlab-ci.yaml
-
