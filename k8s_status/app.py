@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+#
+# This file is part of k8s-status
+#
+# Copyright (c) 2019 Bryan Davis and contributors
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""Web UI for exploring a Toolfroge Kubernetes cluster."""
+
+import collections
+import datetime
+import logging
+import os
+
+import flask
+import natsort
+import yaml
+
+from .k8s import client
+
+app = flask.Flask(__name__)
+
+# Load configuration from YAML file(s).
+# See default_config.yaml for more information
+__dir__ = os.path.dirname(__file__)
+app.config.update(
+    yaml.safe_load(open(os.path.join(__dir__, "../default_config.yaml")))
+)
+try:
+    app.config.update(
+        yaml.safe_load(open(os.path.join(__dir__, "../config.yaml")))
+    )
+except OSError:
+    # It is ok if there is no local config file
+    pass
+
+logging.getLogger().addHandler(flask.logging.default_handler)
+
+
+@app.route("/")
+def home():
+    """Show basic cluster info."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {
+                "version": client.get_version(),
+                "pods": client.get_pods_by_namespace(cached=cached),
+                "metrics": client.get_summary_metrics(cached=cached),
+                "namespaces": client.get_active_namespaces(cached=cached)[
+                    "namespaces"
+                ],
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting statistics")
+    return flask.render_template("home.html", **ctx)
+
+
+@app.route("/robots.txt")
+def robots_txt():
+    """Return a deny-all robots policy."""
+    return flask.Response(
+        "User-Agent: *\nDisallow: /\n", mimetype="text/plain"
+    )
+
+
+@app.route("/healthz")
+def healthz():
+    """Respond to health check requests."""
+    return "ok"
+
+
+@app.route("/nodes/")
+def nodes():
+    """List nodes."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        pods = collections.defaultdict(int)
+        for pod in client.get_all_pods(cached=cached)["items"]:
+            if pod.status.phase == "Succeeded":
+                continue
+            pods[pod.spec.node_name] += 1
+
+        ctx.update(
+            {
+                "nodes": natsort.natsorted(
+                    client.get_nodes(cached=cached)["items"],
+                    key=lambda node: node.metadata.name,
+                ),
+                "metrics": {
+                    m["metadata"]["name"]: m
+                    for m in client.get_nodes_metrics(cached=cached)["items"]
+                },
+                "pods": pods,
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting nodes")
+    return flask.render_template("nodes.html", **ctx)
+
+
+@app.route("/nodes/<name>/")
+def node(name):
+    """Describe a node."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {
+                "node": client.get_node(name, cached=cached)["node"],
+                "metrics": client.get_node_metrics(name, cached=cached)[
+                    "metrics"
+                ],
+                "pods": [
+                    pod
+                    for pod in client.get_all_pods(cached=cached)["items"]
+                    if pod.spec.node_name == name
+                ],
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting node")
+    return flask.render_template("node.html", **ctx)
+
+
+@app.route("/namespaces/")
+def namespaces():
+    """List namespaces."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {
+                "namespaces": client.get_namespaces(cached=cached),
+                "active": client.get_active_namespaces(cached=cached)[
+                    "namespaces"
+                ],
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting namespaces")
+    return flask.render_template("namespaces.html", **ctx)
+
+
+@app.route("/namespaces/<namespace>/")
+def namespace(namespace):
+    """Get details for a given namespace."""
+    ctx = {
+        "namespace": namespace,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {
+                "pods": client.get_pods(namespace, cached=cached),
+                "services": client.get_services(namespace, cached=cached),
+                "ingresses": client.get_ingresses(namespace, cached=cached),
+                "daemonsets": client.get_daemonsets(namespace, cached=cached),
+                "deployments": client.get_deployments(
+                    namespace, cached=cached
+                ),
+                "replicasets": client.get_replicasets(
+                    namespace, cached=cached
+                ),
+                "statefulsets": client.get_statefulsets(
+                    namespace, cached=cached
+                ),
+                "cronjobs": client.get_cronjobs(namespace, cached=cached),
+                "jobs": client.get_jobs(namespace, cached=cached),
+                "quota": client.get_quota(namespace, cached=cached),
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting namespace %s", namespace)
+    return flask.render_template("namespace.html", **ctx)
+
+
+@app.route("/namespaces/<namespace>/pods/<pod>/")
+def pod(namespace, pod):
+    """Get details for a given pod."""
+    ctx = {
+        "namespace": namespace,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {"pod": client.get_pod(namespace, pod, cached=cached)["pod"]}
+        )
+    except Exception:
+        app.logger.exception("Error collecting namespace %s", namespace)
+    if ctx.get("pod"):
+        return flask.render_template("pod.html", **ctx)
+    else:
+        flask.flash(f"Pod {pod} not found.", "danger")
+        return flask.redirect(flask.url_for("namespace", namespace=namespace))
+
+
+@app.route("/namespaces/<namespace>/ingresses/<name>/")
+def ingress(namespace, name):
+    """Get details for a given ingress."""
+    ctx = {
+        "namespace": namespace,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update(
+            {
+                "ingress": client.get_ingress(namespace, name, cached=cached)[
+                    "ingress"
+                ],
+            }
+        )
+    except Exception:
+        app.logger.exception("Error collecting namespace %s", namespace)
+    if ctx.get("ingress"):
+        return flask.render_template("ingress.html", **ctx)
+    else:
+        flask.flash(f"Ingress {name} not found.", "danger")
+        return flask.redirect(flask.url_for("namespace", namespace=namespace))
+
+
+@app.route("/images/")
+def images():
+    """List all images in use on the cluster."""
+    ctx = {}
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update({"images": client.get_images(cached=cached)})
+    except Exception:
+        app.logger.exception("Error collecting images")
+    return flask.render_template("images.html", **ctx)
+
+
+@app.route("/images/<path:name>/")
+def image(name):
+    """List pods using an image."""
+    ctx = {
+        "image": name,
+    }
+    try:
+        cached = "purge" not in flask.request.args
+        ctx.update({"pods": client.get_images(cached=cached)["items"][name]})
+    except Exception:
+        app.logger.exception("Error collecting image '%s'", name)
+    return flask.render_template("image.html", **ctx)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Handle 404 errors."""
+    flask.flash("Requested URL not found.", "danger")
+    return flask.redirect(flask.url_for("home"))
+
+
+@app.template_filter("contains")
+def contains(haystack, needle):
+    """Search a haystack for a needle."""
+    return needle in haystack
+
+
+@app.template_filter("duration")
+def duration(start, end=None, max_parts=3):
+    """Compute a duration relative to the current time or a given time."""
+    if start is None:
+        return ""
+    if end is None:
+        end = datetime.datetime.now(tz=start.tzinfo)
+    diff_secs = abs((end - start).total_seconds())
+    parts = []
+    if diff_secs > 31556952:
+        parts.append(f"{int(diff_secs // 31556952)}y")
+        diff_secs = diff_secs % 31556952
+    if diff_secs > 604800:
+        parts.append(f"{int(diff_secs // 604800)}w")
+        diff_secs = diff_secs % 604800
+    if diff_secs > 86400:
+        parts.append(f"{int(diff_secs // 86400)}d")
+        diff_secs = diff_secs % 86400
+    if diff_secs > 3600:
+        parts.append(f"{int(diff_secs // 3600)}h")
+        diff_secs = diff_secs % 3600
+    if diff_secs > 60:
+        parts.append(f"{int(diff_secs // 60)}m")
+        diff_secs = diff_secs % 60
+    if diff_secs >= 1:
+        parts.append(f"{int(diff_secs)}s")
+    if not parts:
+        parts.append(f"{int(diff_secs * 1000)}ms")
+    parts = parts[:max_parts]
+    return "".join(parts)
+
+
+@app.template_filter("yaml")
+def pprint_yaml(obj):
+    """Dump an object as YAML."""
+    return yaml.dump(obj, explicit_start=True, width=79, indent=2)
+
+
+@app.template_filter("parse_quantity")
+def parse_quantity(obj):
+    """Parse kubernetes quantity like 200Mi to a decimal number."""
+    return client.parse_quantity(obj)
+
+
+@app.context_processor
+def inject_base_variables():
+    """Variables to be usable on all templates."""
+    return {
+        "project": app.config["PROJECT"],
+        "toolsadmin_url": app.config["TOOLSADMIN_URL"],
+        "banner": app.config.get("BANNER"),
+    }
