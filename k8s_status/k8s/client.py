@@ -17,17 +17,22 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Kubernetes client and data collection."""
+
 import collections
 import datetime
 import functools
 
 import kubernetes
+import kubernetes.client
 import kubernetes.utils.quantity
 
 from .cache import cached
 
-
 kubernetes.config.load_incluster_config()
+configuration = kubernetes.client.Configuration.get_default_copy()
+# Otherwise we get: Missing Authority Key Identifier
+configuration.verify_ssl = False
+kubernetes.client.Configuration.set_default(configuration)
 
 
 def parse_quantity(val):
@@ -250,8 +255,15 @@ def get_cronjobs_by_namespace(cached=True):
 def get_pod(namespace, pod, cached=True):
     """Get details for a pod."""
     v1 = corev1_client()
+    try:
+        pod = v1.read_namespaced_pod(name=pod, namespace=namespace)
+    except kubernetes.client.exceptions.ApiException as error:
+        if error.status == 404:
+            pod = {}
+        else:
+            raise
     return {
-        "pod": v1.read_namespaced_pod(name=pod, namespace=namespace),
+        "pod": pod,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
