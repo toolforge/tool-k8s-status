@@ -70,7 +70,7 @@ spec:
               memory: 6Gi
             requests:
               cpu: 1
-              memory: 2Gi
+              memory: 4Gi
 ---
 apiVersion: v1
 kind: Service
