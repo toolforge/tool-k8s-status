@@ -73,4 +73,3 @@ def cached(key, expiry=3600):
         return wrapper
 
     return real_cached
-    
