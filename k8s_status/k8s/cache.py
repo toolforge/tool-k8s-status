@@ -2,7 +2,7 @@
 #
 # This file is part of k8s-status
 #
-# Copyright (c) 2019 Bryan Davis and contributors
+# Copyright (c) 2026 Wikimedia Foundation and contributors
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
