@@ -20,6 +20,7 @@
 
 import collections
 import datetime
+import functools
 import logging
 import os
 
@@ -27,7 +28,10 @@ import flask
 import natsort
 import yaml
 
+from . import api
+from .k8s import cache
 from .k8s import client
+from .k8s import summary
 
 app = flask.Flask(__name__)
 
@@ -47,25 +51,71 @@ except OSError:
 
 logging.getLogger().addHandler(flask.logging.default_handler)
 
+app.register_blueprint(api.bp)
+
+
+def collect(ctx, name, func, *args, default=None):
+    """Add the result of func(*args) to ctx as name.
+
+    Errors are logged and default is used instead, so that one failed API
+    call does not leave the rest of the page empty.
+    """
+    try:
+        ctx[name] = func(*args)
+    except Exception:
+        app.logger.exception("Error collecting %s", name)
+        flask.g.collect_failed = True
+        ctx[name] = default
+
+
+def cached_page(expiry=30):
+    """Cache the rendered HTML of a page for a short time.
+
+    Pages are only cached when every API call worked, and are never cached
+    or served from cache while there are flashed messages waiting to be
+    shown.
+    """
+
+    def real_cached_page(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            if "_flashes" in flask.session:
+                return f(*args, **kwargs)
+            key = "page:" + flask.request.path
+            try:
+                html = cache.load(key)
+            except Exception:
+                app.logger.exception("Error loading %s from cache", key)
+                html = None
+            if html is not None:
+                return html
+            r = f(*args, **kwargs)
+            if isinstance(r, str) and not flask.g.get("collect_failed"):
+                try:
+                    cache.store(key, r, expiry)
+                except Exception:
+                    app.logger.exception("Error storing %s in cache", key)
+            return r
+
+        return wrapper
+
+    return real_cached_page
+
 
 @app.route("/")
 def home():
     """Show basic cluster info."""
     ctx = {}
-    try:
-        cached = "purge" not in flask.request.args
+    collect(ctx, "version", client.get_version)
+    data = summary.get("home")
+    if data:
         ctx.update(
             {
-                "version": client.get_version(),
-                "pods": client.get_pods_by_namespace(cached=cached),
-                "metrics": client.get_summary_metrics(cached=cached),
-                "namespaces": client.get_active_namespaces(cached=cached)[
-                    "namespaces"
-                ],
+                "pods": data,
+                "metrics": data["metrics"],
+                "active_namespaces": data["active_namespaces"],
             }
         )
-    except Exception:
-        app.logger.exception("Error collecting statistics")
     return flask.render_template("home.html", **ctx)
 
 
@@ -75,6 +125,12 @@ def robots_txt():
     return flask.Response(
         "User-Agent: *\nDisallow: /\n", mimetype="text/plain"
     )
+
+
+@app.route("/favicon.ico")
+def favicon():
+    """Redirect browsers looking for a favicon to the real one."""
+    return flask.redirect(flask.url_for("static", filename="favicon.png"))
 
 
 @app.route("/healthz")
@@ -87,53 +143,34 @@ def healthz():
 def nodes():
     """List nodes."""
     ctx = {}
-    try:
-        cached = "purge" not in flask.request.args
-        pods = collections.defaultdict(int)
-        for pod in client.get_all_pods(cached=cached)["items"]:
-            if pod.status.phase == "Succeeded":
-                continue
-            pods[pod.spec.node_name] += 1
-
-        ctx.update(
-            {
-                "nodes": natsort.natsorted(
-                    client.get_nodes(cached=cached)["items"],
-                    key=lambda node: node.metadata.name,
-                ),
-                "metrics": {
-                    m["metadata"]["name"]: m
-                    for m in client.get_nodes_metrics(cached=cached)["items"]
-                },
-                "pods": pods,
-            }
-        )
-    except Exception:
-        app.logger.exception("Error collecting nodes")
+    collect(ctx, "nodes", client.get_nodes, default={"items": []})
+    collect(ctx, "metrics", client.get_nodes_metrics, default={"items": []})
+    ctx["nodes"] = natsort.natsorted(
+        ctx["nodes"]["items"], key=lambda node: node.metadata.name
+    )
+    ctx["metrics"] = {
+        m["metadata"]["name"]: m for m in ctx["metrics"]["items"]
+    }
+    data = summary.get("nodes")
+    ctx["pods"] = collections.defaultdict(int, data["pods"] if data else {})
     return flask.render_template("nodes.html", **ctx)
 
 
 @app.route("/nodes/<name>/")
+@cached_page()
 def node(name):
     """Describe a node."""
     ctx = {}
     try:
-        cached = "purge" not in flask.request.args
-        ctx.update(
-            {
-                "node": client.get_node(name, cached=cached)["node"],
-                "metrics": client.get_node_metrics(name, cached=cached)[
-                    "metrics"
-                ],
-                "pods": [
-                    pod
-                    for pod in client.get_all_pods(cached=cached)["items"]
-                    if pod.spec.node_name == name
-                ],
-            }
-        )
+        ctx["node"] = client.get_node(name)["node"]
     except Exception:
-        app.logger.exception("Error collecting node")
+        app.logger.exception("Error collecting node %s", name)
+        flask.flash(f"Node {name} not found.", "danger")
+        return flask.redirect(flask.url_for("nodes"))
+    collect(ctx, "metrics", client.get_node_metrics, name, default={})
+    collect(ctx, "pods", client.get_node_pods, name, default={"items": []})
+    ctx["metrics"] = ctx["metrics"].get("metrics", {})
+    ctx["pods"] = ctx["pods"]["items"]
     return flask.render_template("node.html", **ctx)
 
 
@@ -141,67 +178,63 @@ def node(name):
 def namespaces():
     """List namespaces."""
     ctx = {}
-    try:
-        cached = "purge" not in flask.request.args
+    data = summary.get("namespaces")
+    if data:
         ctx.update(
             {
-                "namespaces": client.get_namespaces(cached=cached),
-                "active": client.get_active_namespaces(cached=cached)[
-                    "namespaces"
-                ],
+                "namespaces": {
+                    "items": [
+                        {"metadata": {"name": name}} for name in data["items"]
+                    ],
+                },
+                "active": set(data["active"]),
             }
         )
-    except Exception:
-        app.logger.exception("Error collecting namespaces")
+    else:
+        ctx.update({"namespaces": {"items": []}, "active": set()})
     return flask.render_template("namespaces.html", **ctx)
 
 
 @app.route("/namespaces/<namespace>/")
+@cached_page()
 def namespace(namespace):
     """Get details for a given namespace."""
     ctx = {
         "namespace": namespace,
     }
-    try:
-        cached = "purge" not in flask.request.args
-        ctx.update(
-            {
-                "pods": client.get_pods(namespace, cached=cached),
-                "services": client.get_services(namespace, cached=cached),
-                "ingresses": client.get_ingresses(namespace, cached=cached),
-                "daemonsets": client.get_daemonsets(namespace, cached=cached),
-                "deployments": client.get_deployments(
-                    namespace, cached=cached
-                ),
-                "replicasets": client.get_replicasets(
-                    namespace, cached=cached
-                ),
-                "statefulsets": client.get_statefulsets(
-                    namespace, cached=cached
-                ),
-                "cronjobs": client.get_cronjobs(namespace, cached=cached),
-                "jobs": client.get_jobs(namespace, cached=cached),
-                "quota": client.get_quota(namespace, cached=cached),
-            }
-        )
-    except Exception:
-        app.logger.exception("Error collecting namespace %s", namespace)
+    empty = {"items": []}
+    collect(ctx, "pods", client.get_pods, namespace, default=empty)
+    collect(ctx, "services", client.get_services, namespace, default=empty)
+    collect(ctx, "ingresses", client.get_ingresses, namespace, default=empty)
+    collect(ctx, "daemonsets", client.get_daemonsets, namespace, default=empty)
+    collect(
+        ctx, "deployments", client.get_deployments, namespace, default=empty
+    )
+    collect(
+        ctx, "replicasets", client.get_replicasets, namespace, default=empty
+    )
+    collect(
+        ctx, "statefulsets", client.get_statefulsets, namespace, default=empty
+    )
+    collect(ctx, "cronjobs", client.get_cronjobs, namespace, default=empty)
+    collect(ctx, "jobs", client.get_jobs, namespace, default=empty)
+    collect(ctx, "quota", client.get_quota, namespace, default={"quotas": {}})
     return flask.render_template("namespace.html", **ctx)
 
 
 @app.route("/namespaces/<namespace>/pods/<pod>/")
+@cached_page()
 def pod(namespace, pod):
     """Get details for a given pod."""
     ctx = {
         "namespace": namespace,
     }
     try:
-        cached = "purge" not in flask.request.args
-        ctx.update(
-            {"pod": client.get_pod(namespace, pod, cached=cached)["pod"]}
-        )
+        ctx.update({"pod": client.get_pod(namespace, pod)["pod"]})
     except Exception:
         app.logger.exception("Error collecting namespace %s", namespace)
+        flask.flash(f"Error collecting pod {pod}.", "danger")
+        return flask.redirect(flask.url_for("namespace", namespace=namespace))
     if ctx.get("pod"):
         return flask.render_template("pod.html", **ctx)
     else:
@@ -210,18 +243,16 @@ def pod(namespace, pod):
 
 
 @app.route("/namespaces/<namespace>/ingresses/<name>/")
+@cached_page()
 def ingress(namespace, name):
     """Get details for a given ingress."""
     ctx = {
         "namespace": namespace,
     }
     try:
-        cached = "purge" not in flask.request.args
         ctx.update(
             {
-                "ingress": client.get_ingress(namespace, name, cached=cached)[
-                    "ingress"
-                ],
+                "ingress": client.get_ingress(namespace, name)["ingress"],
             }
         )
     except Exception:
@@ -236,32 +267,25 @@ def ingress(namespace, name):
 @app.route("/images/")
 def images():
     """List all images in use on the cluster."""
-    ctx = {}
-    try:
-        cached = "purge" not in flask.request.args
-        ctx.update({"images": client.get_images(cached=cached)})
-    except Exception:
-        app.logger.exception("Error collecting images")
-    return flask.render_template("images.html", **ctx)
+    data = summary.get("images")
+    return flask.render_template(
+        "images.html", images=data if data else {"items": {}}
+    )
 
 
 @app.route("/images/<path:name>/")
 def image(name):
     """List pods using an image."""
-    ctx = {
-        "image": name,
-    }
-    try:
-        cached = "purge" not in flask.request.args
-        ctx.update({"pods": client.get_images(cached=cached)["items"][name]})
-    except Exception:
-        app.logger.exception("Error collecting image '%s'", name)
-    return flask.render_template("image.html", **ctx)
+    data = summary.get("images")
+    pods = data["items"].get(name, []) if data else []
+    return flask.render_template("image.html", image=name, pods=pods)
 
 
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors."""
+    if flask.request.path.startswith("/api/"):
+        return api.response({"error": "Requested URL not found."}, 404)
     flask.flash("Requested URL not found.", "danger")
     return flask.redirect(flask.url_for("home"))
 
