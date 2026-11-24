@@ -113,7 +113,7 @@
           "Namespaces"
         ],
         "summary": "All namespaces",
-        "description": "Built by the refresh CronJob, so up to 5 minutes old. `active` lists namespaces with pods, cronjobs or ingresses.",
+        "description": "Built by the refresh CronJob, so up to 5 minutes old. `active` lists namespaces with pods or cronjobs.",
         "responses": {
           "200": {
             "description": "Namespaces",
@@ -250,77 +250,6 @@
                       "description": "When the data was collected (server time)."
                     },
                     "pod": {
-                      "type": "object"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Data not collected yet, or the Kubernetes API failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/namespaces/{namespace}/ingresses/{name}/": {
-      "get": {
-        "tags": [
-          "Namespaces"
-        ],
-        "summary": "An ingress",
-        "description": "Read live from the Kubernetes API and kept for 30 seconds. `ingress` is the object as returned by the Kubernetes API, without `metadata.managedFields`.",
-        "parameters": [
-          {
-            "name": "namespace",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Namespace name, for example `tool-k8s-status`."
-          },
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Ingress name."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Ingress",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "generated": {
-                      "type": "string",
-                      "example": "2026-11-24 09:03",
-                      "description": "When the data was collected (server time)."
-                    },
-                    "ingress": {
                       "type": "object"
                     }
                   }
@@ -731,30 +660,6 @@
           }
         }
       },
-      "Ingress": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "labels": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "hosts": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          "created": {
-            "type": "string"
-          }
-        }
-      },
       "CronJob": {
         "type": "object",
         "properties": {
@@ -920,11 +825,12 @@
               "$ref": "#/components/schemas/Service"
             }
           },
-          "ingresses": {
+          "httproutes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Ingress"
-            }
+              "$ref": "#/components/schemas/HTTPRoute"
+            },
+            "description": "Gateway API routes that send web traffic to the tool."
           },
           "deployments": {
             "type": "array",
@@ -964,6 +870,44 @@
           },
           "quota": {
             "$ref": "#/components/schemas/Quota"
+          }
+        }
+      },
+      "HTTPRoute": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "hostnames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "backends": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "created": {
+            "type": "string"
           }
         }
       }

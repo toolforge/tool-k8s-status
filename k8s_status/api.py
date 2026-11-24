@@ -162,14 +162,42 @@ def service_info(svc):
     }
 
 
-def ingress_info(ing):
-    """Summarize an ingress."""
+def httproute_info(route):
+    """Summarize an HTTPRoute."""
+    backends = []
+    for rule in route["spec"].get("rules") or []:
+        for ref in rule.get("backendRefs") or []:
+            backends.append({"name": ref.get("name"), "port": ref.get("port")})
     return {
-        "name": ing["metadata"]["name"],
-        "labels": ing["metadata"].get("labels") or {},
-        "hosts": [r.get("host") for r in ing["spec"].get("rules") or [] if r],
-        "created": ing["metadata"].get("creationTimestamp"),
+        "name": route["metadata"]["name"],
+        "labels": route["metadata"].get("labels") or {},
+        "hostnames": route["spec"].get("hostnames") or [],
+        "backends": backends,
+        "created": route["metadata"].get("creationTimestamp"),
     }
+
+
+def httproutes(namespace):
+    """List HTTPRoutes in a namespace.
+
+    Toolforge routes web traffic with HTTPRoutes rather than Ingresses now.
+    They are a custom resource, so a failure here is logged and treated as
+    no routes rather than failing the whole namespace.
+    """
+    try:
+        return [
+            httproute_info(r)
+            for r in client.list_raw(
+                client.custom_client().list_namespaced_custom_object,
+                group="gateway.networking.k8s.io",
+                version="v1",
+                namespace=namespace,
+                plural="httproutes",
+            )
+        ]
+    except Exception:
+        logger.exception("Error collecting httproutes in %s", namespace)
+        return []
 
 
 def cronjob_info(cron):
@@ -224,7 +252,6 @@ def collect_namespace(namespace):
     core = client.corev1_client()
     apps = client.appsv1_client()
     batch = client.batchv1_client()
-    net = client.networkingv1_client()
 
     def items(func, info):
         return [info(o) for o in client.list_raw(func, namespace=namespace)]
@@ -234,7 +261,7 @@ def collect_namespace(namespace):
         "generated": generated(),
         "pods": items(core.list_namespaced_pod, pod_info),
         "services": items(core.list_namespaced_service, service_info),
-        "ingresses": items(net.list_namespaced_ingress, ingress_info),
+        "httproutes": httproutes(namespace),
         "deployments": items(apps.list_namespaced_deployment, workload_info),
         "replicasets": items(apps.list_namespaced_replica_set, workload_info),
         "statefulsets": items(
@@ -262,14 +289,6 @@ def collect_pod(namespace, name):
     """Get a pod as returned by the Kubernetes API."""
     pod = read_raw(client.corev1_client().read_namespaced_pod, name, namespace)
     return {"generated": generated(), "pod": pod}
-
-
-def collect_ingress(namespace, name):
-    """Get an ingress as returned by the Kubernetes API."""
-    ingress = read_raw(
-        client.networkingv1_client().read_namespaced_ingress, name, namespace
-    )
-    return {"generated": generated(), "ingress": ingress}
 
 
 def node_info(node, usage, pods):
@@ -411,21 +430,6 @@ def pod(namespace, name):
         return error(f"Error collecting pod {name}.", 503)
     if data["pod"] is None:
         return error(f"Pod {name} not found.", 404)
-    return response(data)
-
-
-@bp.route("/namespaces/<namespace>/ingresses/<name>/")
-def ingress(namespace, name):
-    """Get an ingress."""
-    try:
-        data = live(
-            f"ingress:{namespace}:{name}", collect_ingress, namespace, name
-        )
-    except Exception:
-        logger.exception("Error collecting ingress %s/%s", namespace, name)
-        return error(f"Error collecting ingress {name}.", 503)
-    if data["ingress"] is None:
-        return error(f"Ingress {name} not found.", 404)
     return response(data)
 
 
