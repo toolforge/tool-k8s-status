@@ -24,11 +24,11 @@
     <div class="panel-body">
       <dl class="dl-indent">
         <dt>Ready</dt>
-        <dd>{{ pod.status.container_statuses|selectattr('ready', 'equalto', True)|list|length }}/{{ pod.status.container_statuses|length }}</dd>
+        <dd>{{ (pod.status.container_statuses or [])|selectattr('ready', 'equalto', True)|list|length }}/{{ (pod.status.container_statuses or [])|length }}</dd>
         <dt>Status</dt>
         <dd>{{ pod.status.phase }}</dd>
         <dt>Restarts</dt>
-        <dd>{{ pod.status.container_statuses|sum(attribute='restart_count') }}</dd>
+        <dd>{{ (pod.status.container_statuses or [])|sum(attribute='restart_count') }}</dd>
         <dt>Node</dt>
         <dd><a href="{{ url_for('node', name=pod.spec.node_name) }}">{{ pod.spec.node_name }}</a></dd>
         <dt>Age</dt>
@@ -74,7 +74,7 @@
     </div>
     <div class="panel-body panel-group">
       {% for container in pod.spec.containers %}
-      {% set container_status = pod.status.container_statuses|selectattr('name', 'equalto', container.name)|default([], true)|first %}
+      {% set container_status = (pod.status.container_statuses or [])|selectattr('name', 'equalto', container.name)|first|default({}, true) %}
       <div class="panel panel-default" id="container-{{ container.name }}">
         <div class="panel-heading">
           <h4 class="panel-title">
@@ -161,7 +161,7 @@
             </dd>
             {% endif %}
             {% endif %}
-            {% if container_status.last_state.running or container_status.last_state.terminated or container_status.last_state.waiting %}
+            {% if container_status.last_state and (container_status.last_state.running or container_status.last_state.terminated or container_status.last_state.waiting) %}
             <dt>Last state</dt>
             {% if container_status.last_state.running %}
             <dd>Running

@@ -2,7 +2,7 @@
 #
 # This file is part of k8s-status
 #
-# Copyright (c) 2019 Bryan Davis and contributors
+# Copyright (c) 2026 Wikimedia Foundation and contributors
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -21,12 +21,11 @@
 import collections
 import datetime
 import functools
+import json
 
 import kubernetes
 import kubernetes.client
 import kubernetes.utils.quantity
-
-from .cache import cached
 
 kubernetes.config.load_incluster_config()
 configuration = kubernetes.client.Configuration.get_default_copy()
@@ -35,9 +34,83 @@ configuration.verify_ssl = False
 kubernetes.client.Configuration.set_default(configuration)
 
 
+# Number of objects to fetch per request when listing large collections.
+# Keeping pages small keeps memory use low when listing every pod in the
+# cluster.
+PAGE_SIZE = 250
+
+
 def parse_quantity(val):
     """Parse kubernetes quantity like 200Mi to a decimal number."""
     return kubernetes.utils.quantity.parse_quantity(val)
+
+
+def parse_time(val):
+    """Parse a kubernetes timestamp like 2019-03-10T22:13:41Z."""
+    if not val:
+        return None
+    return datetime.datetime.fromisoformat(val)
+
+
+def list_raw(func, **kwargs):
+    """Iterate over all objects returned by a list_* API function.
+
+    Results are fetched in pages and parsed as plain JSON. This avoids
+    building kubernetes model objects, which use much more memory than the
+    data they hold.
+    """
+    token = None
+    while True:
+        resp = func(
+            limit=PAGE_SIZE,
+            _continue=token,
+            _preload_content=False,
+            **kwargs,
+        )
+        data = json.loads(resp.data)
+        yield from data["items"]
+        token = data["metadata"].get("continue")
+        if not token:
+            return
+
+
+def slim_pod(pod):
+    """Keep only the parts of a pod that are shown in pod lists.
+
+    The structure and names match the kubernetes model objects so that the
+    same templates can display either.
+    """
+    status = pod.get("status", {})
+    return {
+        "metadata": {
+            "name": pod["metadata"]["name"],
+            "namespace": pod["metadata"]["namespace"],
+            "labels": pod["metadata"].get("labels"),
+        },
+        "spec": {
+            "node_name": pod["spec"].get("nodeName"),
+        },
+        "status": {
+            "phase": status.get("phase"),
+            "start_time": parse_time(status.get("startTime")),
+            "container_statuses": [
+                {
+                    "ready": cs.get("ready"),
+                    "restart_count": cs.get("restartCount", 0),
+                }
+                for cs in status.get("containerStatuses") or []
+            ],
+        },
+    }
+
+
+def is_webservice(pod):
+    """Check if a pod was started by `webservice`."""
+    labels = pod["metadata"].get("labels") or {}
+    if labels.get("app.kubernetes.io/managed-by") == "webservice":
+        return True
+    # Label used by older versions of webservice
+    return labels.get("tools.wmflabs.org/webservice") == "true"
 
 
 @functools.lru_cache()
@@ -48,13 +121,13 @@ def corev1_client():
 
 @functools.lru_cache()
 def appsv1_client():
-    """Get CoreV1 API client."""
+    """Get AppsV1 API client."""
     return kubernetes.client.AppsV1Api()
 
 
 @functools.lru_cache()
 def networkingv1_client():
-    """Get ExtensionsV1beta1 API client."""
+    """Get NetworkingV1 API client."""
     return kubernetes.client.NetworkingV1Api()
 
 
@@ -75,28 +148,19 @@ def get_version():
     return kubernetes.client.VersionApi().get_code()
 
 
-@cached("namespaces", 600)
-def get_namespaces(cached=True):
-    """Get a list of all namespaces in the cluster."""
-    v1 = corev1_client()
-    return {
-        "items": v1.list_namespace().items,
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-    }
-
-
-@cached("pods", 300)
-def get_pods(namespace, cached=True):
+def get_pods(namespace):
     """Get a list of all pods in a namespace."""
     v1 = corev1_client()
     return {
-        "items": v1.list_namespaced_pod(namespace=namespace).items,
+        "items": [
+            slim_pod(pod)
+            for pod in list_raw(v1.list_namespaced_pod, namespace=namespace)
+        ],
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
 
-@cached("services", 300)
-def get_services(namespace, cached=True):
+def get_services(namespace):
     """Get a list of all services in a namespace."""
     v1 = corev1_client()
     return {
@@ -105,8 +169,7 @@ def get_services(namespace, cached=True):
     }
 
 
-@cached("ingresses", 300)
-def get_ingresses(namespace, cached=True):
+def get_ingresses(namespace):
     """Get a list of all ingresses in a namespace."""
     v1 = networkingv1_client()
     return {
@@ -115,9 +178,8 @@ def get_ingresses(namespace, cached=True):
     }
 
 
-@cached("ingresses", 300)
-def get_ingress(namespace, name, cached=True):
-    """Get a list of all ingresses in a namespace."""
+def get_ingress(namespace, name):
+    """Get data for an ingress in a namespace."""
     v1 = networkingv1_client()
     return {
         "ingress": v1.read_namespaced_ingress(name, namespace),
@@ -125,26 +187,7 @@ def get_ingress(namespace, name, cached=True):
     }
 
 
-@cached("ingresses:__by_ns__", 300)
-def get_ingresses_by_namespace(cached=True):
-    """Get a list of all ingress objects grouped by namespace."""
-    data = {
-        "namespaces": collections.defaultdict(list),
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "active_namespaces": 0,
-        "total_ingresses": 0,
-    }
-    v1 = networkingv1_client()
-    for ingress in v1.list_ingress_for_all_namespaces().items:
-        ns = ingress.metadata.namespace
-        data["namespaces"][ns].append(ingress)
-        data["total_ingresses"] += 1
-    data["active_namespaces"] = len(data["namespaces"].keys())
-    return data
-
-
-@cached("daemonsets", 300)
-def get_daemonsets(namespace, cached=True):
+def get_daemonsets(namespace):
     """Get a list of all daemonsets in a namespace."""
     v1 = appsv1_client()
     return {
@@ -153,8 +196,7 @@ def get_daemonsets(namespace, cached=True):
     }
 
 
-@cached("deployments", 300)
-def get_deployments(namespace, cached=True):
+def get_deployments(namespace):
     """Get a list of all deployments in a namespace."""
     v1 = appsv1_client()
     return {
@@ -163,8 +205,7 @@ def get_deployments(namespace, cached=True):
     }
 
 
-@cached("replicasets", 300)
-def get_replicasets(namespace, cached=True):
+def get_replicasets(namespace):
     """Get a list of all replicasets in a namespace."""
     v1 = appsv1_client()
     return {
@@ -173,8 +214,7 @@ def get_replicasets(namespace, cached=True):
     }
 
 
-@cached("statefulsets", 300)
-def get_statefulsets(namespace, cached=True):
+def get_statefulsets(namespace):
     """Get a list of all statefulsets in a namespace."""
     v1 = appsv1_client()
     return {
@@ -183,8 +223,7 @@ def get_statefulsets(namespace, cached=True):
     }
 
 
-@cached("cronjobs", 300)
-def get_cronjobs(namespace, cached=True):
+def get_cronjobs(namespace):
     """Get a list of all cronjobs in a namespace."""
     v1 = batchv1_client()
     return {
@@ -193,8 +232,7 @@ def get_cronjobs(namespace, cached=True):
     }
 
 
-@cached("jobs", 300)
-def get_jobs(namespace, cached=True):
+def get_jobs(namespace):
     """Get a list of all jobs in a namespace."""
     v1 = batchv1_client()
     return {
@@ -203,56 +241,7 @@ def get_jobs(namespace, cached=True):
     }
 
 
-@cached("pods:__all__", 300)
-def get_all_pods(cached=True):
-    """Get a list of all pods."""
-    v1 = corev1_client()
-    return {
-        "items": v1.list_pod_for_all_namespaces().items,
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-    }
-
-
-@cached("toolpods", 5400)
-def get_pods_by_namespace(cached=True):
-    """Get a collection of all Pods grouped by namespace."""
-    data = {
-        "namespaces": collections.defaultdict(list),
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "active_namespaces": 0,
-        "total_pods": 0,
-        "active_pods": 0,
-    }
-    for pod in get_all_pods(cached=cached)["items"]:
-        ns = pod.metadata.namespace
-        data["namespaces"][ns].append(pod)
-        data["total_pods"] += 1
-        if pod.status.phase in ["Pending", "Running"]:
-            data["active_pods"] += 1
-    data["active_namespaces"] = len(data["namespaces"].keys())
-    return data
-
-
-@cached("cronjobs:__by_ns__", 5400)
-def get_cronjobs_by_namespace(cached=True):
-    """Get a collection of all CronJobs grouped by namespace."""
-    data = {
-        "namespaces": collections.defaultdict(list),
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "active_namespaces": 0,
-        "total_cronjobs": 0,
-    }
-    v1 = batchv1_client()
-    for cronjob in v1.list_cron_job_for_all_namespaces().items:
-        ns = cronjob.metadata.namespace
-        data["namespaces"][ns].append(cronjob)
-        data["total_cronjobs"] += 1
-    data["active_namespaces"] = len(data["namespaces"].keys())
-    return data
-
-
-@cached("pods", 300)
-def get_pod(namespace, pod, cached=True):
+def get_pod(namespace, pod):
     """Get details for a pod."""
     v1 = corev1_client()
     try:
@@ -268,46 +257,7 @@ def get_pod(namespace, pod, cached=True):
     }
 
 
-@cached("images", 300)
-def get_images(cached=True):
-    """Get information about Docker images in use in the cluster."""
-    data = {
-        "items": collections.defaultdict(list),
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-    }
-    for pod in get_all_pods(cached=cached)["items"]:
-        # Finished job pod (or similar), so ignore.
-        if pod.status.phase in ("Succeeded", "Failed"):
-            continue
-
-        for container in pod.spec.containers:
-            use = (
-                pod.metadata.namespace,
-                pod.metadata.name,
-                container.name,
-                "pod",
-            )
-            data["items"][container.image].append(use)
-
-    # T342848: track images from cronjobs
-    # FIXME: this will double count any running job captured above
-    crons = get_cronjobs_by_namespace(cached=cached)
-    for namespace, jobs in crons["namespaces"].items():
-        for job in jobs:
-            tmpl = job.spec.job_template
-            for container in tmpl.spec.template.spec.containers:
-                use = (
-                    namespace,
-                    job.metadata.name,
-                    container.name,
-                    "cron",
-                )
-                data["items"][container.image].append(use)
-    return data
-
-
-@cached("metrics:nodes", 300)
-def get_nodes_metrics(cached=True):
+def get_nodes_metrics():
     """Get information about active CPU and memory usage per node."""
     custom = custom_client()
     return {
@@ -318,8 +268,7 @@ def get_nodes_metrics(cached=True):
     }
 
 
-@cached("metrics:node", 300)
-def get_node_metrics(name, cached=True):
+def get_node_metrics(name):
     """Get information about active CPU and memory usage for a node."""
     custom = custom_client()
     return {
@@ -330,8 +279,7 @@ def get_node_metrics(name, cached=True):
     }
 
 
-@cached("metrics:pods", 300)
-def get_pods_metrics(cached=True):
+def get_pods_metrics():
     """Get information about active CPU and memory usage per pod."""
     custom = custom_client()
     return {
@@ -342,8 +290,7 @@ def get_pods_metrics(cached=True):
     }
 
 
-@cached("nodes", 300)
-def get_nodes(cached=True):
+def get_nodes():
     """Get a list of all nodes in the cluster."""
     v1 = corev1_client()
     return {
@@ -352,9 +299,23 @@ def get_nodes(cached=True):
     }
 
 
-@cached("node", 300)
-def get_node(name, cached=True):
-    """Get a list of all nodes in the cluster."""
+def get_node_pods(name):
+    """Get a list of all pods running on a node."""
+    v1 = corev1_client()
+    return {
+        "items": [
+            slim_pod(pod)
+            for pod in list_raw(
+                v1.list_pod_for_all_namespaces,
+                field_selector=f"spec.nodeName={name}",
+            )
+        ],
+        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+def get_node(name):
+    """Get data for a node in the cluster."""
     v1 = corev1_client()
     return {
         "node": v1.read_node(name),
@@ -362,26 +323,7 @@ def get_node(name, cached=True):
     }
 
 
-@cached("metrics:namespaces", 5400)
-def get_active_namespaces(cached=True):
-    """Get a list of all namespaces which should be considered 'active'."""
-    active = set(get_pods_by_namespace(cached=cached)["namespaces"].keys())
-    active.update(
-        get_cronjobs_by_namespace(cached=cached)["namespaces"].keys()
-    )
-    # Some namespaces are "active" by including only an Ingress that
-    # redirects to some other URL space
-    active.update(
-        get_ingresses_by_namespace(cached=cached)["namespaces"].keys()
-    )
-    return {
-        "namespaces": list(active),
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-    }
-
-
-@cached("metrics:summary", 300)
-def get_summary_metrics(cached=True):
+def get_summary_metrics():
     """Get a set of summary metrics about the cluster."""
     data = {
         "control_nodes": 0,
@@ -393,7 +335,7 @@ def get_summary_metrics(cached=True):
         "mem_used_bytes": 0,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
-    for node in get_nodes(cached=cached)["items"]:
+    for node in get_nodes()["items"]:
         if "-control-" in node.metadata.name:
             data["control_nodes"] += 1
         elif "-worker-" in node.metadata.name:
@@ -406,7 +348,7 @@ def get_summary_metrics(cached=True):
         else:
             data["special_nodes"] += 1
 
-    for node in get_nodes_metrics(cached=cached)["items"]:
+    for node in get_nodes_metrics()["items"]:
         if "-worker-" in node["metadata"]["name"]:
             data["mem_used_bytes"] += parse_quantity(node["usage"]["memory"])
             data["cpu_used"] += parse_quantity(node["usage"]["cpu"])
@@ -414,8 +356,7 @@ def get_summary_metrics(cached=True):
     return data
 
 
-@cached("quota", 300)
-def get_quota(namespace, cached=True):
+def get_quota(namespace):
     """Get quota information for a namespace."""
     v1 = corev1_client()
 
@@ -427,18 +368,103 @@ def get_quota(namespace, cached=True):
         }
 
     quota: kubernetes.client.V1ResourceQuotaStatus = quotas.items[0].status
+    # A new quota has no usage reported yet
+    used = quota.used or {}
+    hard = quota.hard or {}
 
     data = {
         key: {
-            "used": quota.used.get(key, None),
-            "hard": quota.hard.get(key, None),
+            "used": used.get(key, None),
+            "hard": hard.get(key, None),
         }
-        for key in sorted(
-            set(list(quota.used.keys()) + list(quota.hard.keys()))
-        )
+        for key in sorted(set(list(used.keys()) + list(hard.keys())))
     }
 
     return {
         "quotas": data,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+
+
+def get_cluster_summary():
+    """Collect cluster wide data for the home, nodes and images pages.
+
+    Every pod, cronjob and namespace in the cluster is read once,
+    a page at a time, and only the counts and names that are displayed are
+    kept. The result only contains plain values so it can be stored as
+    JSON.
+    """
+    generated = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    v1 = corev1_client()
+    active = set()
+    node_pods = collections.defaultdict(int)
+    images = collections.defaultdict(list)
+    webservices = collections.defaultdict(set)
+    total_pods = 0
+    active_pods = 0
+
+    for pod in list_raw(v1.list_pod_for_all_namespaces):
+        ns = pod["metadata"]["namespace"]
+        name = pod["metadata"]["name"]
+        phase = pod.get("status", {}).get("phase")
+        node = pod["spec"].get("nodeName")
+        active.add(ns)
+        total_pods += 1
+        if phase in ["Pending", "Running"]:
+            active_pods += 1
+        if node and phase != "Succeeded":
+            node_pods[node] += 1
+        # Finished job pod (or similar), so ignore.
+        if phase in ("Succeeded", "Failed"):
+            continue
+        for container in pod["spec"]["containers"]:
+            images[container["image"]].append(
+                [ns, name, container["name"], "pod"]
+            )
+            if is_webservice(pod):
+                webservices[ns].add(container["image"])
+
+    # T342848: track images from cronjobs
+    # FIXME: this will double count any running job captured above
+    for cron in list_raw(batchv1_client().list_cron_job_for_all_namespaces):
+        ns = cron["metadata"]["namespace"]
+        active.add(ns)
+        tmpl = cron["spec"]["jobTemplate"]
+        for container in tmpl["spec"]["template"]["spec"]["containers"]:
+            images[container["image"]].append(
+                [ns, cron["metadata"]["name"], container["name"], "cron"]
+            )
+
+    namespaces = [ns["metadata"]["name"] for ns in list_raw(v1.list_namespace)]
+
+    metrics = get_summary_metrics()
+    for key in ["cpu_total", "cpu_used", "mem_total_bytes", "mem_used_bytes"]:
+        # Quantities are Decimal values which JSON cannot store
+        metrics[key] = str(metrics[key])
+
+    return {
+        "home": {
+            "generated": generated,
+            "total_pods": total_pods,
+            "active_pods": active_pods,
+            "active_namespaces": len(active),
+            "metrics": metrics,
+        },
+        "namespaces": {
+            "generated": generated,
+            "items": namespaces,
+            "active": sorted(active),
+        },
+        "nodes": {
+            "generated": generated,
+            "pods": node_pods,
+        },
+        "images": {
+            "generated": generated,
+            "items": images,
+        },
+        "webservices": {
+            "generated": generated,
+            "items": {ns: sorted(i) for ns, i in webservices.items()},
+        },
     }

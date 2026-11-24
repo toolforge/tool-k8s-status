@@ -2,7 +2,7 @@
 #
 # This file is part of k8s-status
 #
-# Copyright (c) 2019 Bryan Davis and contributors
+# Copyright (c) 2026 Wikimedia Foundation and contributors
 #
 # This program is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
@@ -19,55 +19,43 @@
 """Caching object."""
 
 import functools
-import hashlib
+import json
 import logging
 import os
-import pwd
 
-import cachelib
 import flask
+import redis
 
 logger = logging.getLogger(__name__)
 
 
+def key_prefix():
+    """Get the redis key prefix."""
+    prefix = os.environ.get("K8S_STATUS_REDIS_PREFIX")
+    if not prefix:
+        raise RuntimeError("K8S_STATUS_REDIS_PREFIX is not set")
+    return prefix
+
+
 @functools.lru_cache()
-def cache():
-    """Get cachelib cache."""
-    return cachelib.RedisCache(
-        host=flask.current_app.config["REDIS_HOST"],
-        key_prefix=hashlib.sha256(
-            "{0.pw_name}/{0.pw_dir}".format(pwd.getpwuid(os.getuid())).encode(
-                "utf-8"
-            )
-        ).hexdigest(),
-    )
+def connection():
+    """Get redis connection."""
+    return redis.Redis(host=flask.current_app.config["REDIS_HOST"])
 
 
-def cached(key, expiry=3600):
-    """Cache decorated function return value."""
+def load(key):
+    """Load a value from the cache."""
+    value = connection().get(key_prefix() + key)
+    if value is None:
+        logger.debug("Cache miss for %s", key)
+        return None
+    return json.loads(value)
 
-    def real_cached(f):
-        @functools.wraps(f)
-        def wrapper(*args, **kwargs):
-            cache_key = "{}:{}{}".format(
-                key,
-                ";".join(str(arg) for arg in args),
-                ";".join(
-                    "{}={}".format(k, v)
-                    for k, v in sorted(kwargs.items())
-                    if k != "cached"
-                ),
-            )
-            cached = kwargs.get("cached", True)
-            r = cache().get(cache_key) if cached else None
-            if r is None:
-                if cached:
-                    logger.debug("Cache miss for %s", cache_key)
-                r = f(*args, **kwargs)
-                cache().set(cache_key, r, timeout=expiry)
-                logger.debug("Cached value for %s for %s", cache_key, expiry)
-            return r
 
-        return wrapper
-
-    return real_cached
+def store(key, value, expiry):
+    """Store a value in the cache."""
+    # Values are stored as JSON rather than pickle. The Toolforge redis
+    # server is shared and has no access control, so nothing read back from
+    # it should be able to create arbitrary objects.
+    connection().set(key_prefix() + key, json.dumps(value), ex=expiry)
+    logger.debug("Cached value for %s for %s", key, expiry)

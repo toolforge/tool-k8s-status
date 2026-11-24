@@ -60,3 +60,16 @@ dd ul, dd ol {
 .align-top {
   vertical-align: top;
 }
+
+/* Some glyphicons fill their whole box and sit right against the text
+ * after them, so give every icon the same gap. */
+.glyphicon {
+  margin-right: 0.3em;
+}
+
+.footer {
+  padding-bottom: 20px;
+}
+.footer .row > div {
+  line-height: 31px;  /* height of the Powered by Toolforge button */
+}

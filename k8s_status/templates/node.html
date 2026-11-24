@@ -26,6 +26,7 @@
         <dd>{{ node.status.conditions|selectattr('type', 'equalto', 'Ready')|first|attr('status') }}</dd>
         <dt>Role</dt>
         <dd>{% if "node-role.kubernetes.io/control-plane" in node.metadata.labels %}control{% else %}worker{% endif %}</dd>
+        {% if metrics %}
         <dt>CPU usage</dt>
         <dd>
           {{ metrics.usage.cpu|parse_quantity|round(2) }} of
@@ -36,6 +37,7 @@
           {{ metrics.usage.memory|parse_quantity|filesizeformat(binary=True) }} of
           {{ node.status.allocatable.memory|parse_quantity|filesizeformat(binary=True) }}
         </dd>
+        {% endif %}
         <dt>Pod usage</dt>
         <dd>
           {{ pods|length }} of
