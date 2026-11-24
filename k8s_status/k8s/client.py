@@ -179,7 +179,7 @@ def get_ingresses(namespace):
 
 
 def get_ingress(namespace, name):
-    """Get a list of all ingresses in a namespace."""
+    """Get data for an ingress in a namespace."""
     v1 = networkingv1_client()
     return {
         "ingress": v1.read_namespaced_ingress(name, namespace),
@@ -315,7 +315,7 @@ def get_node_pods(name):
 
 
 def get_node(name):
-    """Get a list of all nodes in the cluster."""
+    """Get data for a node in the cluster."""
     v1 = corev1_client()
     return {
         "node": v1.read_node(name),
@@ -389,7 +389,7 @@ def get_quota(namespace):
 def get_cluster_summary():
     """Collect cluster wide data for the home, nodes and images pages.
 
-    Every pod, cronjob, ingress and namespace in the cluster is read once,
+    Every pod, cronjob and namespace in the cluster is read once,
     a page at a time, and only the counts and names that are displayed are
     kept. The result only contains plain values so it can be stored as
     JSON.
@@ -434,13 +434,6 @@ def get_cluster_summary():
             images[container["image"]].append(
                 [ns, cron["metadata"]["name"], container["name"], "cron"]
             )
-
-    # Some namespaces are "active" by including only an Ingress that
-    # redirects to some other URL space
-    for ingress in list_raw(
-        networkingv1_client().list_ingress_for_all_namespaces
-    ):
-        active.add(ingress["metadata"]["namespace"])
 
     namespaces = [ns["metadata"]["name"] for ns in list_raw(v1.list_namespace)]
 
