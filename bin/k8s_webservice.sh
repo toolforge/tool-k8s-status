@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 #
-#/ Usage: k8s_webservice.sh {start,stop,status,restart,shell}
+#/ Usage: k8s_webservice.sh {start,stop,status,restart,shell,cron-start,cron-stop}
 #/ Manage a webservice deployment on the Toolfroge Kubernetes cluster
 #/
 #/ positional arguments:
-#/   {start,stop,status,restart,shell,debug,tail} Action to perform
+#/   {start,stop,status,restart,shell,debug,tail,cron-start,cron-stop}
+#/     Action to perform
 #
 set -Eeuo pipefail
 
@@ -32,6 +33,7 @@ metadata:
   name: $tool
 spec:
   replicas: 1
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
       name: $tool
@@ -67,10 +69,10 @@ spec:
           resources:
             limits:
               cpu: 1
-              memory: 6Gi
-            requests:
-              cpu: 1
               memory: 2Gi
+            requests:
+              cpu: 250m
+              memory: 768Mi
 ---
 apiVersion: v1
 kind: Service
@@ -94,7 +96,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   labels:
-    name: taavi-test
+    name: $tool
     toolforge: tool
     tool.toolforge.org/service: "true"
   name: $tool
@@ -111,6 +113,63 @@ spec:
 EOF
 }
 
+function startcron {
+    local tool=${1:?startcron expects a tool name}
+    echo "Starting refresh cronjob..."
+    # Not managed by `toolforge jobs` because the job needs the same service
+    # account as the webservice to read objects in all namespaces.
+    cat <<EOF | /usr/bin/kubectl apply -f -
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  labels:
+    name: ${tool}-refresh
+    toolforge: tool
+  name: ${tool}-refresh
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 240
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            name: ${tool}-refresh
+            toolforge: tool
+        spec:
+          serviceAccountName: ${tool}-obs
+          restartPolicy: Never
+          containers:
+            - name: refresh
+              image: docker-registry.tools.wmflabs.org/toolforge-python313-sssd-base:latest
+              workingDir: /data/project/${tool}/www/python/src
+              command:
+                - /data/project/${tool}/www/python/venv/bin/python3
+                - bin/refresh.py
+              env:
+                - name: HOME
+                  value: /data/project/${tool}
+              resources:
+                limits:
+                  cpu: 1
+                  memory: 1536Mi
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+EOF
+}
+function stopcron {
+    local tool=${1:?stopcron expects a tool name}
+    echo "Stopping refresh cronjob..."
+    /usr/bin/kubectl delete cronjob ${tool}-refresh
+}
 function stopsvc {
     local tool=${1:?stopsvc expects a tool name}
     echo "Stopping webservice..."
@@ -158,6 +217,12 @@ start)
     ;;
 stop)
     stopsvc "$tool"
+    ;;
+cron-start)
+    startcron "$tool"
+    ;;
+cron-stop)
+    stopcron "$tool"
     ;;
 status)
     /usr/bin/kubectl get pod $(_get_pod $tool)
