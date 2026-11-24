@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="panel-group" role="tablist">
+  {% if pods %}
   <div class="panel panel-info">
     <div class="panel-heading">
       <span class="glyphicon glyphicon-tasks"></span>
@@ -11,7 +12,7 @@
       <table class="table table-condensed">
         <tr>
           <th>Active namespaces</th>
-          <td class="text-right">{{ '{:,}'.format(namespaces|length) }}</td>
+          <td class="text-right">{{ '{:,}'.format(active_namespaces) }}</td>
         </tr>
         <tr>
           <th>Active pods</th>
@@ -47,6 +48,12 @@
       <small>Data updated: {{ pods.generated }} UTC</small>
     </div>
   </div>
+  {% else %}
+  <div class="alert alert-warning" role="alert">
+    Cluster data has not been collected yet. Please try again in a few
+    minutes.
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
 {# vim:sw=2:ts=2:sts=2:et: #}
