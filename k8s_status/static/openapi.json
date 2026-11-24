@@ -1,0 +1,972 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "k8s-status API",
+    "version": "1",
+    "description": "Read-only view of the Toolforge Kubernetes cluster, the same data shown on the k8s-status pages. All responses allow cross-origin requests.",
+    "license": {
+      "name": "GPL-3.0-or-later",
+      "url": "https://www.gnu.org/copyleft/gpl.html"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Cluster"
+    },
+    {
+      "name": "Namespaces"
+    },
+    {
+      "name": "Nodes"
+    },
+    {
+      "name": "Images"
+    }
+  ],
+  "paths": {
+    "/summary/": {
+      "get": {
+        "tags": [
+          "Cluster"
+        ],
+        "summary": "Cluster totals shown on the home page",
+        "description": "Built by the refresh CronJob, so up to 5 minutes old.",
+        "responses": {
+          "200": {
+            "description": "Totals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "total_pods": {
+                      "type": "integer"
+                    },
+                    "active_pods": {
+                      "type": "integer"
+                    },
+                    "active_namespaces": {
+                      "type": "integer"
+                    },
+                    "metrics": {
+                      "type": "object",
+                      "properties": {
+                        "generated": {
+                          "type": "string",
+                          "example": "2026-11-24 09:03",
+                          "description": "When the data was collected (server time)."
+                        },
+                        "control_nodes": {
+                          "type": "integer"
+                        },
+                        "worker_nodes": {
+                          "type": "integer"
+                        },
+                        "special_nodes": {
+                          "type": "integer"
+                        },
+                        "cpu_total": {
+                          "type": "string"
+                        },
+                        "cpu_used": {
+                          "type": "string"
+                        },
+                        "mem_total_bytes": {
+                          "type": "string"
+                        },
+                        "mem_used_bytes": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/namespaces/": {
+      "get": {
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "All namespaces",
+        "description": "Built by the refresh CronJob, so up to 5 minutes old. `active` lists namespaces with pods, cronjobs or ingresses.",
+        "responses": {
+          "200": {
+            "description": "Namespaces",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "active": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/namespaces/{namespace}/": {
+      "get": {
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "Everything in a namespace",
+        "description": "Read live from the Kubernetes API and kept for 30 seconds. Contains the same data as the namespace page.",
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Namespace name, for example `tool-k8s-status`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Namespace",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Namespace"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/namespaces/{namespace}/pods/{name}/": {
+      "get": {
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "A pod",
+        "description": "Read live from the Kubernetes API and kept for 30 seconds. `pod` is the object as returned by the Kubernetes API, without `metadata.managedFields`.",
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Namespace name, for example `tool-k8s-status`."
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pod name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pod",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "pod": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/namespaces/{namespace}/ingresses/{name}/": {
+      "get": {
+        "tags": [
+          "Namespaces"
+        ],
+        "summary": "An ingress",
+        "description": "Read live from the Kubernetes API and kept for 30 seconds. `ingress` is the object as returned by the Kubernetes API, without `metadata.managedFields`.",
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Namespace name, for example `tool-k8s-status`."
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ingress name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ingress",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "ingress": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nodes/": {
+      "get": {
+        "tags": [
+          "Nodes"
+        ],
+        "summary": "All nodes",
+        "description": "Read live from the Kubernetes API and kept for 30 seconds.",
+        "responses": {
+          "200": {
+            "description": "Nodes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Node"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nodes/{name}/": {
+      "get": {
+        "tags": [
+          "Nodes"
+        ],
+        "summary": "A node and the pods running on it",
+        "description": "Read live from the Kubernetes API and kept for 30 seconds. `node` is the object as returned by the Kubernetes API, without `metadata.managedFields`.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Node name, for example `tools-k8s-worker-nfs-1`."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Node",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "node": {
+                      "type": "object"
+                    },
+                    "usage": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "cpu": {
+                          "type": "string"
+                        },
+                        "memory": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "pods": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Pod"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/images/": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Images in use",
+        "description": "Built by the refresh CronJob, so up to 5 minutes old. Each image maps to a list of `[namespace, name, container, kind]` where kind is `pod` or `cron`.",
+        "responses": {
+          "200": {
+            "description": "Images",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webservices/": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Images used by webservices",
+        "description": "Built by the refresh CronJob, so up to 5 minutes old. Maps each namespace to the images of its running `webservice` pods.",
+        "responses": {
+          "200": {
+            "description": "Webservices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "generated": {
+                      "type": "string",
+                      "example": "2026-11-24 09:03",
+                      "description": "When the data was collected (server time)."
+                    },
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "example": {
+                        "tool-k8s-status": [
+                          "docker-registry.tools.wmflabs.org/toolforge-python313-sssd-web:latest"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data not collected yet, or the Kubernetes API failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Container": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          }
+        }
+      },
+      "Pod": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "webservice": {
+            "type": "boolean",
+            "description": "Started by `webservice`."
+          },
+          "phase": {
+            "type": "string"
+          },
+          "node": {
+            "type": "string",
+            "nullable": true
+          },
+          "start_time": {
+            "type": "string",
+            "nullable": true
+          },
+          "ready": {
+            "type": "integer"
+          },
+          "containers_total": {
+            "type": "integer"
+          },
+          "restarts": {
+            "type": "integer"
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            }
+          }
+        }
+      },
+      "Workload": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "replicas": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ready": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "string"
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            }
+          }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "string"
+          },
+          "cluster_ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "ports": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "port": {
+                  "type": "integer"
+                },
+                "protocol": {
+                  "type": "string"
+                },
+                "target_port": {
+                  "oneOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "created": {
+            "type": "string"
+          }
+        }
+      },
+      "Ingress": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "created": {
+            "type": "string"
+          }
+        }
+      },
+      "CronJob": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "schedule": {
+            "type": "string"
+          },
+          "suspend": {
+            "type": "boolean"
+          },
+          "last_schedule_time": {
+            "type": "string",
+            "nullable": true
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            }
+          }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "active": {
+            "type": "integer"
+          },
+          "succeeded": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "start_time": {
+            "type": "string",
+            "nullable": true
+          },
+          "completion_time": {
+            "type": "string",
+            "nullable": true
+          },
+          "containers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            }
+          }
+        }
+      },
+      "Quota": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "used": {
+              "type": "string",
+              "nullable": true
+            },
+            "hard": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        },
+        "example": {
+          "limits.memory": {
+            "used": "3Gi",
+            "hard": "8Gi"
+          }
+        }
+      },
+      "Node": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "unschedulable": {
+            "type": "boolean"
+          },
+          "kubelet_version": {
+            "type": "string"
+          },
+          "allocatable": {
+            "type": "object",
+            "properties": {
+              "cpu": {
+                "type": "string"
+              },
+              "memory": {
+                "type": "string"
+              }
+            }
+          },
+          "usage": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "cpu": {
+                "type": "string"
+              },
+              "memory": {
+                "type": "string"
+              }
+            }
+          },
+          "pods": {
+            "type": "integer",
+            "description": "Pods on the node that have not finished, from the summary."
+          },
+          "created": {
+            "type": "string"
+          }
+        }
+      },
+      "Namespace": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string"
+          },
+          "generated": {
+            "type": "string",
+            "example": "2026-11-24 09:03",
+            "description": "When the data was collected (server time)."
+          },
+          "pods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Pod"
+            }
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Service"
+            }
+          },
+          "ingresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ingress"
+            }
+          },
+          "deployments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workload"
+            }
+          },
+          "replicasets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workload"
+            }
+          },
+          "statefulsets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workload"
+            }
+          },
+          "daemonsets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workload"
+            }
+          },
+          "cronjobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CronJob"
+            }
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            }
+          },
+          "quota": {
+            "$ref": "#/components/schemas/Quota"
+          }
+        }
+      }
+    }
+  }
+}
