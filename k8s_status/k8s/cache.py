@@ -19,10 +19,8 @@
 """Caching object."""
 
 import functools
-import hashlib
 import logging
 import os
-import pwd
 
 import cachelib
 import flask
@@ -30,16 +28,20 @@ import flask
 logger = logging.getLogger(__name__)
 
 
+def key_prefix():
+    """Get the redis key prefix."""
+    prefix = os.environ.get("K8S_STATUS_REDIS_PREFIX")
+    if not prefix:
+        raise RuntimeError("K8S_STATUS_REDIS_PREFIX is not set")
+    return prefix
+
+
 @functools.lru_cache()
 def cache():
     """Get cachelib cache."""
     return cachelib.RedisCache(
         host=flask.current_app.config["REDIS_HOST"],
-        key_prefix=hashlib.sha256(
-            "{0.pw_name}/{0.pw_dir}".format(pwd.getpwuid(os.getuid())).encode(
-                "utf-8"
-            )
-        ).hexdigest(),
+        key_prefix=key_prefix(),
     )
 
 
