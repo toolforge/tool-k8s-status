@@ -234,7 +234,11 @@
               <dl class="dl-indent">
                 {% for item in container.env %}
                 <dt>{{ item.name }}</dt>
+                {% if item.valueFrom and item.valueFrom.secretKeyRef %}
+                <dd>&lt;secret&gt;</dd>
+                {% else %}
                 <dd>{{ item.value }}</dd>
+                {% endif %}
                 {% endfor %}
               </dl>
             </dd>
