@@ -48,6 +48,10 @@ try:
 except OSError:
     # It is ok if there is no local config file
     pass
+# Build service images don't mount NFS, so the secret key can also come from
+# a Toolforge envvar.
+if "K8S_STATUS_SECRET_KEY" in os.environ:
+    app.config["SECRET_KEY"] = os.environ["K8S_STATUS_SECRET_KEY"]
 
 logging.getLogger().addHandler(flask.logging.default_handler)
 
