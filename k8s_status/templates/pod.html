@@ -234,7 +234,7 @@
               <dl class="dl-indent">
                 {% for item in container.env %}
                 <dt>{{ item.name }}</dt>
-                {% if item.valueFrom and item.valueFrom.secretKeyRef %}
+                {% if item.value_from and item.value_from.secret_key_ref %}
                 <dd>&lt;secret&gt;</dd>
                 {% else %}
                 <dd>{{ item.value }}</dd>
