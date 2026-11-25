@@ -8,7 +8,7 @@ Deploy on Toolforge
 Your tool will need a service account with rights to query across namespaces.
 
 ```
-$ ssh login.toolforge.org
+$ ssh dev.toolforge.org
 $ become $TOOL_NAME
 $ toolforge envvars create K8S_STATUS_REDIS_PREFIX "$(openssl rand -hex 32)"
 $ toolforge envvars create K8S_STATUS_SECRET_KEY "$(openssl rand -hex 32)"
