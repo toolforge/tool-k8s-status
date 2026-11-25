@@ -3,35 +3,30 @@ K8s status
 
 Browse the Toolforge Kubernetes cluster.
 
-Generate the requirements.txt file
-----------------------------------
-
-```
-$ poetry export --without-hashes -f requirements.txt -o requirements.txt
-````
-
 Deploy on Toolforge
 -------------------
 Your tool will need a service account with rights to query across namespaces.
 
 ```
-$ ssh dev.toolforge.org
+$ ssh login.toolforge.org
 $ become $TOOL_NAME
-$ mkdir -p $HOME/www/python
-$ git clone https://gitlab.wikimedia.org/toolforge-repos/k8s-status $HOME/www/python/src
-$ webservice python3.13 shell
-$ python3 -m venv $HOME/www/python/venv
-$ source $HOME/www/python/venv/bin/activate
-$ pip install --upgrade pip wheel
-$ pip install -r $HOME/www/python/src/requirements.txt
-$ exit
 $ toolforge envvars create K8S_STATUS_REDIS_PREFIX "$(openssl rand -hex 32)"
-$ www/python/src/bin/k8s_webservice.sh start
-$ www/python/src/bin/k8s_webservice.sh cron-start
+$ toolforge envvars create K8S_STATUS_SECRET_KEY "$(openssl rand -hex 32)"
+$ toolforge build start https://gitlab.wikimedia.org/toolforge-repos/k8s-status
+$ curl -s https://gitlab.wikimedia.org/toolforge-repos/k8s-status/-/raw/main/bin/k8s_webservice.sh | bash -s start
+$ curl -s https://gitlab.wikimedia.org/toolforge-repos/k8s-status/-/raw/main/bin/k8s_webservice.sh | bash -s cron-start
 ```
 
-The `K8S_STATUS_REDIS_PREFIX` envvar is a secret prefix for the cache keys in
-the shared Toolforge redis. The tool will not start without it.
+`K8S_STATUS_REDIS_PREFIX` is a secret prefix for the cache keys in the shared
+Toolforge redis. The tool will not start without it.
+
+The webservice and the refresh CronJob need the `-obs` service account, so
+they are created by `bin/k8s_webservice.sh` instead of `webservice` or
+`toolforge jobs`.
+
+To deploy a new version, run `toolforge build start` again and then
+`k8s_webservice.sh restart`. The CronJob picks up the new image on its next
+run.
 
 How it works
 ------------
@@ -44,10 +39,6 @@ cluster. Reading every pod in the cluster is slow, so a CronJob runs
 `bin/refresh.py` every 5 minutes. It reads the cluster a page at a time, keeps
 only the counts and names that are displayed, and stores the result in redis
 as JSON. The webservice only ever reads this small summary.
-
-The CronJob uses the same `$TOOL_NAME-obs` service account as the webservice,
-so it is managed by `k8s_webservice.sh cron-start` and `cron-stop` rather than
-`toolforge jobs`.
 
 API
 ---
