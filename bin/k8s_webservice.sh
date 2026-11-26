@@ -210,8 +210,9 @@ fi
 
 prefix=$(($(echo -n $wmcsproject | wc -c) + 1))
 tool="${USER:prefix}"
-# Image built by `toolforge build start`
-image="${K8S_STATUS_IMAGE:-tools-harbor.wmcloud.org/tool-${tool}/tool-${tool}:latest}"
+# Image built for the deployer component by the Toolforge components service.
+# bin/deploy.py pins the running deployment to the exact image of each build.
+image="${K8S_STATUS_IMAGE:-tools-harbor.wmcloud.org/tool-${tool}/deployer:latest}"
 cmd=${1:-help}
 
 case $cmd in

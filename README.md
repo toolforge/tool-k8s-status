@@ -12,7 +12,8 @@ $ ssh dev.toolforge.org
 $ become $TOOL_NAME
 $ toolforge envvars create K8S_STATUS_REDIS_PREFIX "$(openssl rand -hex 32)"
 $ toolforge envvars create K8S_STATUS_SECRET_KEY "$(openssl rand -hex 32)"
-$ toolforge build start https://gitlab.wikimedia.org/toolforge-repos/k8s-status
+$ curl -s https://gitlab.wikimedia.org/toolforge-repos/k8s-status/-/raw/main/toolforge.yaml | toolforge components config create
+$ toolforge components deployment create
 $ curl -s https://gitlab.wikimedia.org/toolforge-repos/k8s-status/-/raw/main/bin/k8s_webservice.sh | bash -s start
 $ curl -s https://gitlab.wikimedia.org/toolforge-repos/k8s-status/-/raw/main/bin/k8s_webservice.sh | bash -s cron-start
 ```
@@ -22,11 +23,14 @@ Toolforge redis. The tool will not start without it.
 
 The webservice and the refresh CronJob need the `-obs` service account, so
 they are created by `bin/k8s_webservice.sh` instead of `webservice` or
-`toolforge jobs`.
+`toolforge jobs`. The image is built by the Toolforge build service for the
+`deployer` component in `toolforge.yaml`. Each time it is deployed, the
+deployer sets the webservice and the CronJob to the new image.
 
-To deploy a new version, run `toolforge build start` again and then
-`k8s_webservice.sh restart`. The CronJob picks up the new image on its next
-run.
+Pushes to `main` are deployed by GitLab CI. Create a token with
+`toolforge components deploy-token create` and add it as a masked and
+protected `TOOLS_DEPLOY_TOKEN` CI/CD variable. Without it the deploy job is
+skipped.
 
 How it works
 ------------

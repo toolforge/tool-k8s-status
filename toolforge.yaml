@@ -1,0 +1,18 @@
+# Push-to-deploy config for the Toolforge components service
+# The webservice and the refresh CronJob are not listed here because they
+# need the -obs service account, which components can't use. Instead the
+# deployer copies each new build's image to them.
+source_url: https://gitlab.wikimedia.org/toolforge-repos/k8s-status/-/raw/main/toolforge.yaml
+components:
+  deployer:
+    component_type: continuous
+    build:
+      repository: https://gitlab.wikimedia.org/toolforge-repos/k8s-status
+      ref: main
+    run:
+      command: deployer
+      mount: all
+      cpu: 100m
+      memory: 128Mi
+      emails: onfailure
+      filelog: false

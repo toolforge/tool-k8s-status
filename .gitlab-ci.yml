@@ -1,4 +1,10 @@
+stages:
+  - test
+  - deploy
+
 include:
   - project: repos/cloud/cicd/gitlab-ci
     file: /py3.13-trixie-tox/gitlab-ci.yaml
-
+  # deploys pushes to the main branch when TOOLS_DEPLOY_TOKEN is set
+  - project: "repos/cloud/cicd/gitlab-ci"
+    file: "toolforge-cd/deploy-to-toolforge.yaml"
