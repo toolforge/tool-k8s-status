@@ -45,21 +45,23 @@ spec:
         name: $tool
         toolforge: tool
         tool.toolforge.org/service: "true"
+        # Everything is in the image, so skip the NFS mounts
+        toolforge.org/mount-storage: none
     spec:
       # The serviceAccountName is special magic. Not for all tools.
       serviceAccountName: ${tool}-obs
       containers:
         #
         - name: webservice
-          image: docker-registry.tools.wmflabs.org/toolforge-python313-sssd-web:latest
+          image: $image
           command:
-            - /usr/bin/webservice-runner
+            - launcher
+            - web
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
             name: http
             protocol: TCP
-          workingDir: /data/project/${tool}/
           livenessProbe:
             httpGet:
               path: /healthz
@@ -143,19 +145,17 @@ spec:
           labels:
             name: ${tool}-refresh
             toolforge: tool
+            toolforge.org/mount-storage: none
         spec:
           serviceAccountName: ${tool}-obs
           restartPolicy: Never
           containers:
             - name: refresh
-              image: docker-registry.tools.wmflabs.org/toolforge-python313-sssd-base:latest
-              workingDir: /data/project/${tool}/www/python/src
+              image: $image
+              imagePullPolicy: Always
               command:
-                - /data/project/${tool}/www/python/venv/bin/python3
-                - bin/refresh.py
-              env:
-                - name: HOME
-                  value: /data/project/${tool}
+                - launcher
+                - refresh
               resources:
                 limits:
                   cpu: 1
@@ -180,9 +180,10 @@ function stopsvc {
 
 function shell {
     local tool=${1:?shell expects a tool name}
-    shift
+    local shell_image=${2:?shell expects an image}
+    shift 2
     exec /usr/bin/kubectl run interactive \
-        --image=docker-registry.tools.wmflabs.org/toolforge-python313-sssd-base:latest \
+        --image=$shell_image \
         --restart=Never \
         --command=true \
         --env=HOME=$HOME \
@@ -209,6 +210,8 @@ fi
 
 prefix=$(($(echo -n $wmcsproject | wc -c) + 1))
 tool="${USER:prefix}"
+# Image built by `toolforge build start`
+image="${K8S_STATUS_IMAGE:-tools-harbor.wmcloud.org/tool-${tool}/tool-${tool}:latest}"
 cmd=${1:-help}
 
 case $cmd in
@@ -232,10 +235,10 @@ restart)
     ;;
 shell)
     echo "Starting interactive shell..."
-    shell "$tool" /bin/bash -il
+    shell "$tool" docker-registry.tools.wmflabs.org/toolforge-python313-sssd-base:latest /bin/bash -il
     ;;
 debug)
-    shell "$tool" bash -c "cd $HOME/www/python/src && $HOME/www/python/venv/bin/flask shell"
+    shell "$tool" "$image" launcher "flask --app app shell"
     ;;
 tail)
     /usr/bin/kubectl logs -f $(_get_pod $tool)
