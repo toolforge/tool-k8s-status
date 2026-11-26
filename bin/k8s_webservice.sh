@@ -210,9 +210,14 @@ fi
 
 prefix=$(($(echo -n $wmcsproject | wc -c) + 1))
 tool="${USER:prefix}"
-# Image built for the deployer component by the Toolforge components service.
-# bin/deploy.py pins the running deployment to the exact image of each build.
-image="${K8S_STATUS_IMAGE:-tools-harbor.wmcloud.org/tool-${tool}/deployer:latest}"
+# Use the image of the deployer component when push-to-deploy is set up,
+# otherwise the one from a manual `toolforge build start`.
+if /usr/bin/kubectl get deployment deployer >/dev/null 2>&1; then
+    default_image="tools-harbor.wmcloud.org/tool-${tool}/deployer:latest"
+else
+    default_image="tools-harbor.wmcloud.org/tool-${tool}/tool-${tool}:latest"
+fi
+image="${K8S_STATUS_IMAGE:-$default_image}"
 cmd=${1:-help}
 
 case $cmd in
