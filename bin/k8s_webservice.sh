@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-#/ Usage: k8s_webservice.sh {start,stop,status,restart,shell,cron-start,cron-stop}
-#/ Manage a webservice deployment on the Toolfroge Kubernetes cluster
+#/ Usage: k8s_webservice.sh {start,stop,status,restart,shell,debug,tail,cron-start,cron-stop}
+#/ Manage a webservice deployment on the Toolforge Kubernetes cluster
 #/
 #/ positional arguments:
 #/   {start,stop,status,restart,shell,debug,tail,cron-start,cron-stop}
