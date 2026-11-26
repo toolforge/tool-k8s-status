@@ -34,7 +34,7 @@ skipped.
 
 How it works
 ------------
-Pages about a single namespace, pod, ingress or node read their data directly
+Pages about a single namespace, pod or node read their data directly
 from the Kubernetes API when they are viewed. The rendered page is kept in
 redis for 30 seconds so that reloading it does not query the API again.
 

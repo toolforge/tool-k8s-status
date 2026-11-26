@@ -126,12 +126,6 @@ def appsv1_client():
 
 
 @functools.lru_cache()
-def networkingv1_client():
-    """Get NetworkingV1 API client."""
-    return kubernetes.client.NetworkingV1Api()
-
-
-@functools.lru_cache()
 def batchv1_client():
     """Get BatchV1 API client."""
     return kubernetes.client.BatchV1Api()
@@ -169,20 +163,23 @@ def get_services(namespace):
     }
 
 
-def get_ingresses(namespace):
-    """Get a list of all ingresses in a namespace."""
-    v1 = networkingv1_client()
+def get_httproutes(namespace):
+    """Get a list of all HTTPRoutes in a namespace."""
+    items = list(
+        list_raw(
+            custom_client().list_namespaced_custom_object,
+            group="gateway.networking.k8s.io",
+            version="v1",
+            namespace=namespace,
+            plural="httproutes",
+        )
+    )
+    for item in items:
+        item["metadata"]["creationTimestamp"] = parse_time(
+            item["metadata"].get("creationTimestamp")
+        )
     return {
-        "items": v1.list_namespaced_ingress(namespace=namespace).items,
-        "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-    }
-
-
-def get_ingress(namespace, name):
-    """Get data for an ingress in a namespace."""
-    v1 = networkingv1_client()
-    return {
-        "ingress": v1.read_namespaced_ingress(name, namespace),
+        "items": items,
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
