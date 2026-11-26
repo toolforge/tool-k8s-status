@@ -209,7 +209,7 @@ def namespace(namespace):
     empty = {"items": []}
     collect(ctx, "pods", client.get_pods, namespace, default=empty)
     collect(ctx, "services", client.get_services, namespace, default=empty)
-    collect(ctx, "ingresses", client.get_ingresses, namespace, default=empty)
+    collect(ctx, "httproutes", client.get_httproutes, namespace, default=empty)
     collect(ctx, "daemonsets", client.get_daemonsets, namespace, default=empty)
     collect(
         ctx, "deployments", client.get_deployments, namespace, default=empty
@@ -243,28 +243,6 @@ def pod(namespace, pod):
         return flask.render_template("pod.html", **ctx)
     else:
         flask.flash(f"Pod {pod} not found.", "danger")
-        return flask.redirect(flask.url_for("namespace", namespace=namespace))
-
-
-@app.route("/namespaces/<namespace>/ingresses/<name>/")
-@cached_page()
-def ingress(namespace, name):
-    """Get details for a given ingress."""
-    ctx = {
-        "namespace": namespace,
-    }
-    try:
-        ctx.update(
-            {
-                "ingress": client.get_ingress(namespace, name)["ingress"],
-            }
-        )
-    except Exception:
-        app.logger.exception("Error collecting namespace %s", namespace)
-    if ctx.get("ingress"):
-        return flask.render_template("ingress.html", **ctx)
-    else:
-        flask.flash(f"Ingress {name} not found.", "danger")
         return flask.redirect(flask.url_for("namespace", namespace=namespace))
 
 

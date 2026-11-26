@@ -8,7 +8,7 @@
   <li class="active">{{ namespace }}</li>
 </ol>
 <div class="page-header">
-  <h1>Namespace: {{ namespace }}</a></h1>
+  <h1>Namespace: {{ namespace }}</h1>
 </div>
 
 <div class="panel-group" role="tablist">
@@ -142,29 +142,41 @@
   </div>
   {% endif %}
 
-  {% if ingresses and ingresses["items"] %}
+  {% if httproutes and httproutes["items"] %}
   <div class="panel panel-default">
     <div class="panel-heading">
       <h3 class="panel-title">
         <span class="glyphicon glyphicon-cloud-download"></span>
-        Ingresses
+        HTTPRoutes
       </h3>
     </div>
     <div class="table-responsive">
       <table class="table table-condensed table-hover tablesorter">
         <thead>
-          <th>Name</th>
-          <th>Hosts</th>
-          <th>Age</th>
+          <tr>
+            <th>Name</th>
+            <th>Hostnames</th>
+            <th>Backends</th>
+            <th>Age</th>
+          </tr>
         </thead>
         <tbody>
-          {% for ingress in ingresses["items"] %}
+          {% for route in httproutes["items"] %}
           <tr>
-            <td><a href="{{ url_for('ingress', namespace=ingress.metadata.namespace, name=ingress.metadata.name) }}">{{ ingress.metadata.name }}</a></td>
+            <td>{{ route.metadata.name }}</td>
             <td>
-              {{ ingress.spec.rules|map(attribute="host")|join(', ') }}
+              {% for host in route.spec.hostnames or [] %}
+              <a href="https://{{ host }}/">{{ host }}</a>{% if not loop.last %}, {% endif %}
+              {% endfor %}
             </td>
-            <td class="text-right">{{ ingress.metadata.creation_timestamp|duration }}</td>
+            <td>
+              {% for rule in route.spec.rules or [] %}
+              {% for ref in rule.backendRefs or [] %}
+              {{ ref.name }}{% if ref.port %}:{{ ref.port }}{% endif %}
+              {% endfor %}
+              {% endfor %}
+            </td>
+            <td class="text-right">{{ route.metadata.creationTimestamp|duration }}</td>
           </tr>
           {% endfor %}
         </tbody>
